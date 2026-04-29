@@ -17,17 +17,17 @@ spec:
         image: bloodbridge-request:latest
         imagePullPolicy: IfNotPresent
         ports:
-        - containerPort: 3004
+        - containerPort: 3000
         livenessProbe:
           httpGet:
             path: /health
-            port: 3004
+            port: 3000
           initialDelaySeconds: 15
           periodSeconds: 10
         readinessProbe:
           httpGet:
             path: /health
-            port: 3004
+            port: 3000
           initialDelaySeconds: 5
           periodSeconds: 5
 ---
@@ -39,7 +39,7 @@ spec:
   selector:
     app: request-service
   ports:
-    - port: 3004
-      targetPort: 3004
+    - port: 3000
+      targetPort: 3000
       nodePort: 30004
   type: NodePort

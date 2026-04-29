@@ -17,17 +17,17 @@ spec:
         image: bloodbridge-hospital:latest
         imagePullPolicy: IfNotPresent
         ports:
-        - containerPort: 3003
+        - containerPort: 3000
         livenessProbe:
           httpGet:
             path: /health
-            port: 3003
+            port: 3000
           initialDelaySeconds: 15
           periodSeconds: 10
         readinessProbe:
           httpGet:
             path: /health
-            port: 3003
+            port: 3000
           initialDelaySeconds: 5
           periodSeconds: 5
 ---
@@ -39,7 +39,7 @@ spec:
   selector:
     app: hospital-service
   ports:
-    - port: 3003
-      targetPort: 3003
+    - port: 3000
+      targetPort: 3000
       nodePort: 30003
   type: NodePort
