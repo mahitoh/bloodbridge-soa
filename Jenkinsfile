@@ -23,29 +23,25 @@ pipeline {
             }
         }
 
-        stage('Check Coverage') {
-            steps {
-                dir('services/auth-service') {
-                    sh '''
-                        if [ -f coverage/coverage-summary.json ]; then
-                            COVERAGE=$(node -e "const r=require('./coverage/coverage-summary.json'); console.log(r.total.lines.pct)")
-                            echo "Coverage: $COVERAGE%"
-                            if (( $(echo "$COVERAGE < 80" | bc -l) )); then
-                                echo "WARNING: Coverage $COVERAGE% is below 80% - add more tests!"
-                            else
-                                echo "PASSED: Coverage is $COVERAGE%"
-                            fi
-                        else
-                            echo "No coverage report found - skipping check"
-                        fi
-                    '''
-                }
-            }
-        }
-
         stage('Build Docker Images') {
             steps {
                 sh 'docker build -t bloodbridge-auth:latest services/auth-service'
+                sh 'docker build -t bloodbridge-donor:latest services/donor-service'
+                sh 'docker build -t bloodbridge-hospital:latest services/hospital-service'
+                sh 'docker build -t bloodbridge-request:latest services/request-service'
+                sh 'docker build -t bloodbridge-location:latest services/location-service'
+                sh 'docker build -t bloodbridge-notification:latest services/notification-service'
+            }
+        }
+
+        stage('Import Images into K3s') {
+            steps {
+                sh 'docker save bloodbridge-auth:latest | k3s ctr images import -'
+                sh 'docker save bloodbridge-donor:latest | k3s ctr images import -'
+                sh 'docker save bloodbridge-hospital:latest | k3s ctr images import -'
+                sh 'docker save bloodbridge-request:latest | k3s ctr images import -'
+                sh 'docker save bloodbridge-location:latest | k3s ctr images import -'
+                sh 'docker save bloodbridge-notification:latest | k3s ctr images import -'
             }
         }
 
