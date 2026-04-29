@@ -1,0 +1,50 @@
+---
+- name: Install Jenkins and Monitoring
+  hosts: vps
+  become: yes
+  tasks:
+
+    - name: Install Java 21
+      apt:
+        name: openjdk-21-jdk
+        state: present
+        update_cache: yes
+
+    - name: Download Jenkins war
+      get_url:
+        url: https://get.jenkins.io/war-stable/latest/jenkins.war
+        dest: /opt/jenkins.war
+
+    - name: Create Jenkins service
+      copy:
+        dest: /etc/systemd/system/jenkins.service
+        content: |
+          [Unit]
+          Description=Jenkins
+          After=network.target
+          [Service]
+          Type=simple
+          User=root
+          ExecStart=/usr/bin/java -jar /opt/jenkins.war --httpPort=8080
+          Restart=always
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: Start Jenkins
+      systemd:
+        name: jenkins
+        state: started
+        enabled: yes
+        daemon_reload: yes
+
+    - name: Install Helm
+      shell: curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+      args:
+        creates: /usr/local/bin/helm
+
+    - name: Install Node.js
+      shell: |
+        curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+        apt install nodejs -y
+      args:
+        creates: /usr/bin/node
