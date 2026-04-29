@@ -18,7 +18,7 @@ pipeline {
             steps {
                 dir('services/auth-service') {
                     sh 'npm install'
-                    sh 'npm test -- --coverage'
+                    sh 'npm test -- --coverage --coverageReporters=json-summary --forceExit'
                 }
             }
         }
@@ -27,13 +27,13 @@ pipeline {
             steps {
                 dir('services/auth-service') {
                     sh '''
-                        COVERAGE=$(node -e "
-                          const r=require('./coverage/coverage-summary.json');
-                          console.log(r.total.lines.pct)")
+                        COVERAGE=$(node -e "const r=require('./coverage/coverage-summary.json'); console.log(r.total.lines.pct)")
                         echo "Coverage: $COVERAGE%"
                         if (( $(echo "$COVERAGE < 80" | bc -l) )); then
                             echo "FAILED: Coverage below 80%"
                             exit 1
+                        else
+                            echo "PASSED: Coverage is $COVERAGE%"
                         fi
                     '''
                 }
