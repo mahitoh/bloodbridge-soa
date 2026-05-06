@@ -16,24 +16,12 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                dir('services/auth-service') {
-                    sh 'npm install'
-                }
-                dir('services/donor-service') {
-                    sh 'npm install'
-                }
-                dir('services/hospital-service') {
-                    sh 'npm install'
-                }
-                dir('services/request-service') {
-                    sh 'npm install'
-                }
-                dir('services/location-service') {
-                    sh 'npm install'
-                }
-                dir('services/notification-service') {
-                    sh 'npm install'
-                }
+                dir('services/auth-service') { sh 'npm install' }
+                dir('services/donor-service') { sh 'npm install' }
+                dir('services/hospital-service') { sh 'npm install' }
+                dir('services/request-service') { sh 'npm install' }
+                dir('services/location-service') { sh 'npm install' }
+                dir('services/notification-service') { sh 'npm install' }
             }
         }
 
@@ -70,7 +58,7 @@ pipeline {
                             COVERAGE=$(node -e "const r=require('./coverage/coverage-summary.json'); console.log(r.total.lines.pct)")
                             echo "Auth Service Coverage: $COVERAGE%"
                             if (( $(echo "$COVERAGE < 80" | bc -l) )); then
-                                echo "❌ Coverage $COVERAGE% is below 80% - deployment blocked!"
+                                echo "❌ Coverage $COVERAGE% below 80% - blocked!"
                                 exit 1
                             else
                                 echo "✅ Coverage $COVERAGE% passed!"
@@ -82,8 +70,9 @@ pipeline {
         }
 
         stage('Build Docker Images') {
+            when { branch 'main' }
             steps {
-                echo 'Building Docker images for all services...'
+                echo 'Building Docker images...'
                 sh 'docker build -t bloodbridge-auth:latest services/auth-service'
                 sh 'docker build -t bloodbridge-donor:latest services/donor-service'
                 sh 'docker build -t bloodbridge-hospital:latest services/hospital-service'
@@ -94,8 +83,8 @@ pipeline {
         }
 
         stage('Import Images into K3s') {
+            when { branch 'main' }
             steps {
-                echo 'Importing images into Kubernetes...'
                 sh 'docker save bloodbridge-auth:latest | k3s ctr images import -'
                 sh 'docker save bloodbridge-donor:latest | k3s ctr images import -'
                 sh 'docker save bloodbridge-hospital:latest | k3s ctr images import -'
@@ -106,8 +95,9 @@ pipeline {
         }
 
         stage('Deploy to Production') {
+            when { branch 'main' }
             steps {
-                echo 'Deploying to Kubernetes production...'
+                echo 'Deploying to production...'
                 sh 'kubectl apply -f k8s/'
                 sh 'kubectl rollout status deployment/auth-service --timeout=60s'
                 sh 'kubectl rollout status deployment/donor-service --timeout=60s'
@@ -119,17 +109,17 @@ pipeline {
         }
 
         stage('Regression Tests') {
+            when { branch 'main' }
             steps {
-                echo 'Running automated regression tests...'
+                echo 'Running regression tests...'
                 sh '''
                     sleep 15
-                    curl -f http://localhost:30001/health && echo "✅ Auth service OK"
-                    curl -f http://localhost:30002/health && echo "✅ Donor service OK"
-                    curl -f http://localhost:30003/health && echo "✅ Hospital service OK"
-                    curl -f http://localhost:30004/health && echo "✅ Request service OK"
-                    curl -f http://localhost:30005/health && echo "✅ Location service OK"
-                    curl -f http://localhost:30006/health && echo "✅ Notification service OK"
-                    echo "✅ All regression tests passed!"
+                    curl -f http://localhost:30001/health && echo "✅ Auth OK"
+                    curl -f http://localhost:30002/health && echo "✅ Donor OK"
+                    curl -f http://localhost:30003/health && echo "✅ Hospital OK"
+                    curl -f http://localhost:30004/health && echo "✅ Request OK"
+                    curl -f http://localhost:30005/health && echo "✅ Location OK"
+                    curl -f http://localhost:30006/health && echo "✅ Notification OK"
                 '''
             }
         }
@@ -137,10 +127,10 @@ pipeline {
 
     post {
         success {
-            echo '🎉 Pipeline complete! BloodBridge deployed and all tests passed!'
+            echo '🎉 Pipeline passed!'
         }
         failure {
-            echo '❌ Pipeline failed! Deployment blocked. Check logs above.'
+            echo '❌ Pipeline failed! Deployment blocked.'
         }
     }
 }
