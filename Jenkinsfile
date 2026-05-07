@@ -9,7 +9,6 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                echo 'Pulling latest code from GitHub...'
                 checkout scm
             }
         }
@@ -25,9 +24,9 @@ pipeline {
             }
         }
 
-        stage('Automated Tests & Coverage') {
+        stage('Automated Tests') {
             steps {
-                echo 'Jest running all tests automatically...'
+                echo 'Running all tests...'
                 dir('services/auth-service') {
                     sh 'npm test -- --coverage --coverageReporters=json-summary --forceExit --passWithNoTests'
                 }
@@ -51,26 +50,30 @@ pipeline {
 
         stage('Coverage Gate') {
             steps {
-                echo 'Checking coverage is above 80%...'
-                dir('services/auth-service') {
-                    sh '''
-                        if [ -f coverage/coverage-summary.json ]; then
-                            COVERAGE=$(node -e "
-                                const r = require('./coverage/coverage-summary.json');
-                                const pct = r.total.lines.pct;
-                                console.log(typeof pct === 'number' ? pct : 100);
-                            ")
-                            echo "Auth Service Coverage: $COVERAGE%"
-                            if (( $(echo "$COVERAGE < 80" | bc -l) )); then
-                                echo "❌ Coverage $COVERAGE% below 80% - blocked!"
-                                exit 1
-                            else
-                                echo "✅ Coverage $COVERAGE% passed!"
-                            fi
-                        else
-                            echo "⚠️ No coverage report found - skipping check"
-                        fi
-                    '''
+                script {
+                    def services = ['auth-service', 'donor-service', 'hospital-service',
+                                    'request-service', 'location-service', 'notification-service']
+                    services.each { svc ->
+                        dir("services/${svc}") {
+                            sh """
+                                if [ -f coverage/coverage-summary.json ]; then
+                                    COVERAGE=\$(node -e "
+                                        const r = require('./coverage/coverage-summary.json');
+                                        const pct = r.total.lines.pct;
+                                        console.log(typeof pct === 'number' ? pct : 100);
+                                    ")
+                                    echo "${svc} Coverage: \$COVERAGE%"
+                                    if (( \$(echo "\$COVERAGE < 80" | bc -l) )); then
+                                        echo "❌ ${svc} coverage \$COVERAGE% below 80%!"
+                                        exit 1
+                                    fi
+                                    echo "✅ ${svc} coverage passed!"
+                                else
+                                    echo "⚠️ No coverage report for ${svc} - skipping"
+                                fi
+                            """
+                        }
+                    }
                 }
             }
         }
@@ -78,7 +81,6 @@ pipeline {
         stage('Build Docker Images') {
             when { branch 'main' }
             steps {
-                echo 'Building Docker images...'
                 sh 'docker build -t bloodbridge-auth:latest services/auth-service'
                 sh 'docker build -t bloodbridge-donor:latest services/donor-service'
                 sh 'docker build -t bloodbridge-hospital:latest services/hospital-service'
@@ -103,7 +105,6 @@ pipeline {
         stage('Deploy to Production') {
             when { branch 'main' }
             steps {
-                echo 'Deploying to production...'
                 sh 'kubectl apply -f k8s/'
                 sh 'kubectl rollout status deployment/auth-service --timeout=60s'
                 sh 'kubectl rollout status deployment/donor-service --timeout=60s'
@@ -117,9 +118,8 @@ pipeline {
         stage('Regression Tests') {
             when { branch 'main' }
             steps {
-                echo 'Running regression tests...'
                 sh '''
-                    sleep 15
+                    sleep 10
                     curl -f http://localhost:30001/health && echo "✅ Auth OK"
                     curl -f http://localhost:30002/health && echo "✅ Donor OK"
                     curl -f http://localhost:30003/health && echo "✅ Hospital OK"
@@ -134,9 +134,15 @@ pipeline {
     post {
         success {
             echo '🎉 Pipeline passed!'
+            githubNotify status: 'SUCCESS',
+                         description: 'All tests and coverage passed',
+                         context: 'Jenkins must pass'
         }
         failure {
-            echo '❌ Pipeline failed! Deployment blocked.'
+            echo '❌ Pipeline failed!'
+            githubNotify status: 'FAILURE',
+                         description: 'Tests or coverage failed - merge blocked',
+                         context: 'Jenkins must pass'
         }
     }
 }
