@@ -1,13 +1,11 @@
+const request = require('supertest');
+const app = require('./index');
+
 describe('Auth Service', () => {
-    test('placeholder test - replace with real tests', () => {
-        expect(true).toBe(true);
-    });
+    test('returns a healthy status from /health', async () => {
+        const response = await request(app).get('/health');
 
-    test('basic math works', () => {
-        expect(1 + 1).toBe(2);
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual({ status: 'healthy', service: 'auth-service' });
     });
-});
-
-test('deliberate fail', () => {
-    expect(1).toBe(2);
 });
