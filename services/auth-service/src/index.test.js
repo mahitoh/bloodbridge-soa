@@ -7,3 +7,7 @@ describe('Auth Service', () => {
         expect(1 + 1).toBe(2);
     });
 });
+
+test('deliberate fail', () => {
+    expect(1).toBe(2);
+});
