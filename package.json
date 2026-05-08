@@ -1,0 +1,25 @@
+{
+  "name": "bloodbridge-soa",
+  "version": "1.0.0",
+  "description": "A service-oriented architecture platform for managing blood donations, facilitating connections between donors and recipients.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo 'Run ./test-all.sh for all tests'",
+    "prepare": "husky"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mahitoh/bloodbridge-soa.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/mahitoh/bloodbridge-soa/issues"
+  },
+  "homepage": "https://github.com/mahitoh/bloodbridge-soa#readme",
+  "devDependencies": {
+    "husky": "^9.1.7"
+  }
+}
