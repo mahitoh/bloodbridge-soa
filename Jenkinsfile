@@ -35,8 +35,8 @@ pipeline {
                                         console.log(typeof pct === 'number' ? pct : 100);
                                     ")
                                     echo "${svc}: \$COVERAGE%"
-                                    if (( \$(echo "\$COVERAGE < 80" | bc -l) )); then
-                                        echo "❌ ${svc} coverage \$COVERAGE% below 80%!"
+                                    if (( \$(echo "\$COVERAGE < 90" | bc -l) )); then
+                                        echo "❌ ${svc} coverage \$COVERAGE% below 90% - blocked!"
                                         exit 1
                                     fi
                                     echo "✅ ${svc} passed!"
@@ -61,29 +61,21 @@ pipeline {
                     usernameVariable: 'GIT_USER',
                     passwordVariable: 'GIT_TOKEN'
                 )]) {
-                    sh """
+                    sh '''
                         git config user.email "jenkins@bloodbridge.com"
                         git config user.name "Jenkins"
-                        
-                        # Get the current branch commit
-                        BRANCH_COMMIT=\$(git rev-parse HEAD)
-                        BRANCH_NAME=\$(git rev-parse --abbrev-ref HEAD || echo ${env.BRANCH_NAME})
-                        
-                        echo "Merging branch: \$BRANCH_NAME"
-                        echo "Commit: \$BRANCH_COMMIT"
-                        
-                        # Fetch everything
-                        git fetch origin
-                        
-                        # Checkout main
+
+                        BRANCH_COMMIT=$(git rev-parse HEAD)
+                        echo "Commit to merge: $BRANCH_COMMIT"
+
+                        git fetch https://$GIT_USER:$GIT_TOKEN@github.com/mahitoh/bloodbridge-soa.git +refs/heads/main:refs/remotes/origin/main
+
                         git checkout -B main origin/main
-                        
-                        # Merge the commit
-                        git merge --no-ff \$BRANCH_COMMIT -m "ci: auto-merge \$BRANCH_NAME — coverage passed"
-                        
-                        # Push to GitHub
-                        git push https://\$GIT_USER:\$GIT_TOKEN@github.com/mahitoh/bloodbridge-soa.git main
-                    """
+
+                        git merge --no-ff $BRANCH_COMMIT -m "ci: auto-merge coverage passed"
+
+                        git push https://$GIT_USER:$GIT_TOKEN@github.com/mahitoh/bloodbridge-soa.git main
+                    '''
                 }
             }
         }
@@ -149,7 +141,7 @@ pipeline {
             echo '🎉 Coverage verified and deployed to production!'
         }
         failure {
-            echo '❌ Coverage below 80% or deployment failed!'
+            echo '❌ Coverage below 90% or deployment failed!'
         }
     }
 }
