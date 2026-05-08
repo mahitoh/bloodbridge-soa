@@ -30,8 +30,8 @@ run_service_tests() {
             console.log(typeof pct === 'number' ? pct : 100);
         ")
         echo "Coverage: $COVERAGE%"
-        if (( $(echo "$COVERAGE < 80" | bc -l) )); then
-            echo "❌ FAILED: $name coverage $COVERAGE% is below 80%"
+        if (( $(echo "$COVERAGE < 90" | bc -l) )); then
+            echo "❌ FAILED: $name coverage $COVERAGE% is below 90%"
             FAILED=$((FAILED + 1))
         else
             echo "✅ PASSED: $name coverage $COVERAGE%"

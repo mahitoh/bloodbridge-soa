@@ -35,8 +35,8 @@ pipeline {
                                         console.log(typeof pct === 'number' ? pct : 100);
                                     ")
                                     echo "${svc}: \$COVERAGE%"
-                                    if (( \$(echo "\$COVERAGE < 80" | bc -l) )); then
-                                        echo "❌ ${svc} coverage \$COVERAGE% below 80%!"
+                                    if (( \$(echo "\$COVERAGE < 90" | bc -l) )); then
+                                        echo "❌ ${svc} coverage \$COVERAGE% below 90%!"
                                         exit 1
                                     fi
                                     echo "✅ ${svc} passed!"
@@ -56,11 +56,7 @@ pipeline {
             }
             steps {
                 echo 'Coverage passed! Jenkins merging to main...'
-                withCredentials([usernamePassword(
-                    credentialsId: 'github-credentials',
-                    usernameVariable: 'GIT_USER',
-                    passwordVariable: 'GIT_TOKEN'
-                )]) {
+                withCredentials([string(credentialsId: 'github-token', variable: 'GIT_TOKEN')]) {
                     sh """
                         git config user.email "jenkins@bloodbridge.com"
                         git config user.name "Jenkins"
@@ -82,7 +78,7 @@ pipeline {
                         git merge --no-ff \$BRANCH_COMMIT -m "ci: auto-merge \$BRANCH_NAME — coverage passed"
                         
                         # Push to GitHub
-                        git push https://\$GIT_USER:\$GIT_TOKEN@github.com/mahitoh/bloodbridge-soa.git main
+                        git push https://x-access-token:\$GIT_TOKEN@github.com/mahitoh/bloodbridge-soa.git main
                     """
                 }
             }
@@ -149,7 +145,7 @@ pipeline {
             echo '🎉 Coverage verified and deployed to production!'
         }
         failure {
-            echo '❌ Coverage below 80% or deployment failed!'
+            echo '❌ Coverage below 90% or deployment failed!'
         }
     }
 }
