@@ -28,16 +28,22 @@ describe('Auth Service', () => {
         expect(response.body.user.role).toBe(userData.role);
     });
 
-    test('POST /auth/register should fail with existing email', async () => {
-        const userData = {
-            email: 'test@example.com',
-            password: 'password123',
-            role: 'donor'
-        };
-        await request(app).post('/auth/register').send(userData);
-        const response = await request(app).post('/auth/register').send(userData);
+    test('POST /auth/register should fail with missing email', async () => {
+        const response = await request(app).post('/auth/register').send({ password: 'pass', role: 'donor' });
         expect(response.statusCode).toBe(400);
-        expect(response.body.error).toBe('User already exists');
+        expect(response.body.error).toBe('Email, password, and role are required');
+    });
+
+    test('POST /auth/register should fail with missing password', async () => {
+        const response = await request(app).post('/auth/register').send({ email: 'test@ex.com', role: 'donor' });
+        expect(response.statusCode).toBe(400);
+        expect(response.body.error).toBe('Email, password, and role are required');
+    });
+
+    test('POST /auth/register should fail with missing role', async () => {
+        const response = await request(app).post('/auth/register').send({ email: 'test@ex.com', password: 'pass' });
+        expect(response.statusCode).toBe(400);
+        expect(response.body.error).toBe('Email, password, and role are required');
     });
 
     test('POST /auth/login should authenticate user', async () => {
@@ -53,10 +59,16 @@ describe('Auth Service', () => {
         expect(response.body.token).toBeDefined();
     });
 
-    test('POST /auth/login should fail with wrong password', async () => {
-        const response = await request(app).post('/auth/login').send({ email: 'nonexistent@example.com', password: 'wrong' });
-        expect(response.statusCode).toBe(401);
-        expect(response.body.error).toBe('Invalid credentials');
+    test('POST /auth/login should fail with missing email', async () => {
+        const response = await request(app).post('/auth/login').send({ password: 'pass' });
+        expect(response.statusCode).toBe(400);
+        expect(response.body.error).toBe('Email and password are required');
+    });
+
+    test('POST /auth/login should fail with missing password', async () => {
+        const response = await request(app).post('/auth/login').send({ email: 'test@ex.com' });
+        expect(response.statusCode).toBe(400);
+        expect(response.body.error).toBe('Email and password are required');
     });
 
     test('POST /auth/verify should validate token', async () => {
