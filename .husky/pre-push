@@ -1,4 +1,15 @@
 #!/bin/sh
+
+# Block direct pushes to main
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+if [ "$BRANCH" = "main" ]; then
+    echo "❌ Direct push to main is blocked!"
+    echo "Create a feature branch and push there instead."
+    echo "git checkout -b feature/your-feature"
+    exit 1
+fi
+
+# Run tests before push
 echo "🧪 Running tests before push..."
 ./test-all.sh
 if [ $? -ne 0 ]; then
