@@ -134,7 +134,7 @@ pipeline {
                     curl -f http://localhost:30004/health && echo "✅ Request OK"
                     curl -f http://localhost:30005/health && echo "✅ Location OK"
                     curl -f http://localhost:30006/health && echo "✅ Notification OK"
-                    curl -f http://localhost:30000 && echo "✅ Frontend OK"
+                    curl -f http://localhost:30007 && echo "✅ Frontend OK"
                 '''
             }
         }
