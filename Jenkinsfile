@@ -35,7 +35,7 @@ pipeline {
                                         console.log(typeof pct === 'number' ? pct : 100);
                                     ")
                                     echo "${svc}: \$COVERAGE%"
-                                    if [ \\$
+                                    if [ \\\\$/g
                                         echo "❌ ${svc} coverage \$COVERAGE% below 90% - blocked!"
                                         exit 1
                                     fi
