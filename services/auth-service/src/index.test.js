@@ -71,6 +71,14 @@ describe('Auth Service', () => {
         expect(response.body.error).toBe('Email and password are required');
     });
 
+    test('POST /auth/login should fail with wrong password for existing user', async () => {
+        const userData = { email: 'wrong@example.com', password: 'correct', role: 'donor' };
+        await request(app).post('/auth/register').send(userData);
+        const response = await request(app).post('/auth/login').send({ email: 'wrong@example.com', password: 'wrong' });
+        expect(response.statusCode).toBe(401);
+        expect(response.body.error).toBe('Invalid credentials');
+    });
+
     test('POST /auth/verify should validate token', async () => {
         const userData = {
             email: 'verify@example.com',
