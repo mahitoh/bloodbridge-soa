@@ -1,20 +1,18 @@
-apiVersion: apps/v1
-kind: Deployment
 metadata:
-  name: frontend
+  name: client
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: frontend
+      app: client
   template:
     metadata:
       labels:
-        app: frontend
+        app: client
     spec:
       containers:
-      - name: frontend
-        image: bloodbridge-frontend:latest
+      - name: client
+        image: bloodbridge-client:latest
         imagePullPolicy: Never
         ports:
         - containerPort: 80
@@ -28,12 +26,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: frontend
+  name: client
 spec:
   selector:
-    app: frontend
+    app: client
   ports:
     - port: 80
       targetPort: 80
-      nodePort: 30007
+      nodePort: 30000
   type: NodePort

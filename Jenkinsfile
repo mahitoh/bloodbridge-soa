@@ -90,7 +90,7 @@ pipeline {
                 sh 'docker build -t bloodbridge-request:latest services/request-service'
                 sh 'docker build -t bloodbridge-location:latest services/location-service'
                 sh 'docker build -t bloodbridge-notification:latest services/notification-service'
-                sh 'docker build -t bloodbridge-frontend:latest client'
+                sh 'docker build -t bloodbridge-client:latest client'
             }
         }
 
@@ -103,7 +103,7 @@ pipeline {
                 sh 'docker save bloodbridge-request:latest | k3s ctr images import -'
                 sh 'docker save bloodbridge-location:latest | k3s ctr images import -'
                 sh 'docker save bloodbridge-notification:latest | k3s ctr images import -'
-                sh 'docker save bloodbridge-frontend:latest | k3s ctr images import -'
+                sh 'docker save bloodbridge-client:latest | k3s ctr images import -'
             }
         }
 
@@ -118,7 +118,7 @@ pipeline {
                 sh 'kubectl rollout status deployment/request-service --timeout=60s'
                 sh 'kubectl rollout status deployment/location-service --timeout=60s'
                 sh 'kubectl rollout status deployment/notification-service --timeout=60s'
-                sh 'kubectl rollout status deployment/frontend --timeout=60s'
+                sh 'kubectl rollout status deployment/client --timeout=60s'
             }
         }
 
@@ -134,7 +134,7 @@ pipeline {
                     curl -f http://localhost:30004/health && echo "✅ Request OK"
                     curl -f http://localhost:30005/health && echo "✅ Location OK"
                     curl -f http://localhost:30006/health && echo "✅ Notification OK"
-                    curl -f http://localhost:30007 && echo "✅ Frontend OK"
+                    curl -f http://localhost:30000 && echo "✅ Client OK"
                 '''
             }
         }
