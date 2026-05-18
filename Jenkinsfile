@@ -112,6 +112,13 @@ pipeline {
             steps {
                 echo 'Deploying to Kubernetes...'
                 sh 'kubectl apply -f k8s/'
+                sh 'kubectl rollout restart deployment/auth-service'
+                sh 'kubectl rollout restart deployment/donor-service'
+                sh 'kubectl rollout restart deployment/hospital-service'
+                sh 'kubectl rollout restart deployment/request-service'
+                sh 'kubectl rollout restart deployment/location-service'
+                sh 'kubectl rollout restart deployment/notification-service'
+                sh 'kubectl rollout restart deployment/client'
                 sh 'kubectl rollout status deployment/auth-service --timeout=60s'
                 sh 'kubectl rollout status deployment/donor-service --timeout=60s'
                 sh 'kubectl rollout status deployment/hospital-service --timeout=60s'
