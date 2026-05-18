@@ -31,8 +31,8 @@ const Landing = () => {
             className="flex items-center gap-2 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-red focus-visible:ring-offset-2"
             onClick={() => setMobileOpen(false)}
           >
-            <div className="w-10 h-10 bg-primary-red rounded-xl flex items-center justify-center">
-              <Droplets className="text-white" size={24} />
+            <div className="w-10 h-10 flex items-center justify-center">
+              <img src="/favicon.svg" alt="BloodBridge Logo" className="w-full h-full object-contain drop-shadow-md" />
             </div>
             <span className="text-2xl font-bold text-gray-900 tracking-tight">BloodBridge</span>
           </Link>
@@ -291,8 +291,8 @@ const Landing = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8 sm:gap-12 mb-16">
             <div className="sm:col-span-2 lg:col-span-2 space-y-6">
               <div className="flex items-center gap-2">
-                <div className="w-10 h-10 bg-primary-red rounded-xl flex items-center justify-center">
-                  <Droplets className="text-white" size={24} />
+                <div className="w-10 h-10 flex items-center justify-center">
+                  <img src="/favicon.svg" alt="BloodBridge Logo" className="w-full h-full object-contain drop-shadow-md" />
                 </div>
                 <span className="text-2xl font-bold text-gray-900 tracking-tight">BloodBridge</span>
               </div>
