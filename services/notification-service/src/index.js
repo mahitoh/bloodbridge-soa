@@ -1,14 +1,1 @@
-const express = require('express');
-const app = express();
-app.use(express.json());
-
-app.get('/health', (req, res) => {
-    res.json({ status: 'healthy', service: 'notification-service' });
-});
-
-const PORT = process.env.PORT || 3000;
-/* istanbul ignore next */
-if (process.env.NODE_ENV !== 'test') {
-    app.listen(PORT, () => console.log(`notification-service running on port ${PORT}`));
-}
-module.exports = app;
+module.exports = require('./app');

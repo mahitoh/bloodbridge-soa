@@ -4,4 +4,4 @@ COPY package*.json ./
 RUN npm install --production
 COPY src/ ./src/
 EXPOSE 3005
-CMD ["node", "src/index.js"]
+CMD ["node", "src/server.js"]
