@@ -17,17 +17,17 @@ spec:
         image: bloodbridge-donor:latest
         imagePullPolicy: IfNotPresent
         ports:
-        - containerPort: 3000
+        - containerPort: 3002
         livenessProbe:
           httpGet:
             path: /health
-            port: 3000
+            port: 3002
           initialDelaySeconds: 15
           periodSeconds: 10
         readinessProbe:
           httpGet:
             path: /health
-            port: 3000
+            port: 3002
           initialDelaySeconds: 5
           periodSeconds: 5
 ---
@@ -40,6 +40,6 @@ spec:
     app: donor-service
   ports:
     - port: 3000
-      targetPort: 3000
+      targetPort: 3002
       nodePort: 30002
   type: NodePort

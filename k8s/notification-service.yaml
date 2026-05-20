@@ -17,17 +17,17 @@ spec:
         image: bloodbridge-notification:latest
         imagePullPolicy: IfNotPresent
         ports:
-        - containerPort: 3000
+        - containerPort: 3006
         livenessProbe:
           httpGet:
             path: /health
-            port: 3000
+            port: 3006
           initialDelaySeconds: 15
           periodSeconds: 10
         readinessProbe:
           httpGet:
             path: /health
-            port: 3000
+            port: 3006
           initialDelaySeconds: 5
           periodSeconds: 5
 ---
@@ -40,6 +40,6 @@ spec:
     app: notification-service
   ports:
     - port: 3000
-      targetPort: 3000
+      targetPort: 3006
       nodePort: 30006
   type: NodePort
