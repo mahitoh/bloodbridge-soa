@@ -1,26 +1,45 @@
-const { sendSMS } = require('../providers/sms.provider');
-const { sendEmail } = require('../providers/email.provider');
+const notificationService = require('../services/notification.service');
+const { successResponse } = require('../utils/apiResponse');
 
-const sendDonorNotification = async (req, res, next) => {
+const sendSmsNotification = async (req, res, next) => {
     try {
-        const delivery = await sendSMS({ phone: req.body.phone, message: req.body.message });
-        res.status(202).json({ message: 'Donor notification queued', donorId: req.body.donorId, delivery });
+        const notification = await notificationService.sendSmsNotification(req.body);
+        return successResponse(res, 202, 'SMS notification queued', notification);
     } catch (error) {
         next(error);
     }
 };
 
-const sendHospitalNotification = async (req, res, next) => {
+const sendEmailNotification = async (req, res, next) => {
     try {
-        const delivery = await sendEmail({
-            email: req.body.email,
-            subject: req.body.subject,
-            message: req.body.message
-        });
-        res.status(202).json({ message: 'Hospital notification queued', hospitalId: req.body.hospitalId, delivery });
+        const notification = await notificationService.sendEmailNotification(req.body);
+        return successResponse(res, 202, 'Email notification queued', notification);
     } catch (error) {
         next(error);
     }
 };
 
-module.exports = { sendDonorNotification, sendHospitalNotification };
+const getNotificationHistory = async (req, res, next) => {
+    try {
+        const notifications = notificationService.getNotificationHistory();
+        return successResponse(res, 200, 'Notification history retrieved', notifications);
+    } catch (error) {
+        next(error);
+    }
+};
+
+const getNotificationById = async (req, res, next) => {
+    try {
+        const notification = notificationService.getNotificationById(req.params.id);
+        return successResponse(res, 200, 'Notification retrieved', notification);
+    } catch (error) {
+        next(error);
+    }
+};
+
+module.exports = {
+    sendSmsNotification,
+    sendEmailNotification,
+    getNotificationHistory,
+    getNotificationById
+};
