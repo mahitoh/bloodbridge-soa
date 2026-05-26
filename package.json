@@ -2,7 +2,6 @@
   "name": "bloodbridge-soa",
   "version": "1.0.0",
   "description": "A service-oriented architecture platform for managing blood donations, facilitating connections between donors and recipients.",
-  "main": "index.js",
   "scripts": {
     "test": "echo 'Run ./test-all.sh for all tests'",
     "prepare": "husky"
