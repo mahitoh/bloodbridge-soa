@@ -599,7 +599,7 @@ Every function you write needs a test file. Create `index.test.js` next to your 
 Example test structure:
 ```javascript
 const request = require('supertest');
-const app = require('./index');
+const app = require('./app');
 
 describe('Donor Service', () => {
     test('GET /health returns healthy', async () => {
