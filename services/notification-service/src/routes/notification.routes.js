@@ -1,8 +1,23 @@
 const router = require('express').Router();
-const { sendDonorNotification, sendHospitalNotification } = require('../controllers/notification.controller');
-const { validateDonorNotification, validateHospitalNotification } = require('../validators/notification.validator');
+const {
+    sendSmsNotification,
+    sendEmailNotification,
+    getNotificationHistory,
+    getNotificationById
+} = require('../controllers/notification.controller');
+const {
+    validateSmsNotification,
+    validateEmailNotification,
+    validateDonorNotification,
+    validateHospitalNotification
+} = require('../validators/notification.validator');
 
-router.post('/donor', validateDonorNotification, sendDonorNotification);
-router.post('/hospital', validateHospitalNotification, sendHospitalNotification);
+router.post('/sms', validateSmsNotification, sendSmsNotification);
+router.post('/email', validateEmailNotification, sendEmailNotification);
+router.get('/history', getNotificationHistory);
+router.get('/history/:id', getNotificationById);
+
+router.post('/donor', validateDonorNotification, sendSmsNotification);
+router.post('/hospital', validateHospitalNotification, sendEmailNotification);
 
 module.exports = router;
