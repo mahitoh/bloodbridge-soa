@@ -1,4 +1,4 @@
-const Notification = require('../models/notification.model');
+const { createNotification } = require('../models/notification.model');
 const notificationRepository = require('../repositories/notification.repository');
 const { sendSMS } = require('../providers/sms.provider');
 const { sendEmail } = require('../providers/email.provider');
@@ -7,7 +7,7 @@ const { toNotificationResponse } = require('../dtos/notification.dto');
 const sendSmsNotification = async ({ phone, message, donorId = null }) => {
     const delivery = await sendSMS({ phone, message });
 
-    const notification = new Notification({
+    const notification = createNotification({
         type: 'sms',
         recipient: phone,
         message,
@@ -22,7 +22,7 @@ const sendSmsNotification = async ({ phone, message, donorId = null }) => {
 const sendEmailNotification = async ({ email, subject, message, hospitalId = null }) => {
     const delivery = await sendEmail({ email, subject, message });
 
-    const notification = new Notification({
+    const notification = createNotification({
         type: 'email',
         recipient: email,
         subject,
