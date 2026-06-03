@@ -83,13 +83,7 @@ pipeline {
         stage('Build Docker Images') {
             when { branch 'main' }
             steps {
-                echo 'Building Docker images...'
-                sh 'docker build -t bloodbridge-auth:latest services/auth-service'
-                sh 'docker build -t bloodbridge-donor:latest services/donor-service'
-                sh 'docker build -t bloodbridge-hospital:latest services/hospital-service'
-                sh 'docker build -t bloodbridge-request:latest services/request-service'
-                sh 'docker build -t bloodbridge-location:latest services/location-service'
-                sh 'docker build -t bloodbridge-notification:latest services/notification-service'
+                echo 'Building client Docker image...'
                 sh 'docker build -t bloodbridge-client:latest client'
             }
         }
@@ -97,12 +91,7 @@ pipeline {
         stage('Import Images into K3s') {
             when { branch 'main' }
             steps {
-                sh 'docker save bloodbridge-auth:latest | k3s ctr images import -'
-                sh 'docker save bloodbridge-donor:latest | k3s ctr images import -'
-                sh 'docker save bloodbridge-hospital:latest | k3s ctr images import -'
-                sh 'docker save bloodbridge-request:latest | k3s ctr images import -'
-                sh 'docker save bloodbridge-location:latest | k3s ctr images import -'
-                sh 'docker save bloodbridge-notification:latest | k3s ctr images import -'
+                echo 'Importing client Docker image into K3s...'
                 sh 'docker save bloodbridge-client:latest | k3s ctr images import -'
             }
         }
@@ -110,21 +99,9 @@ pipeline {
         stage('Deploy to Production') {
             when { branch 'main' }
             steps {
-                echo 'Deploying to Kubernetes...'
-                sh 'kubectl apply -f k8s/'
-                sh 'kubectl rollout restart deployment/auth-service'
-                sh 'kubectl rollout restart deployment/donor-service'
-                sh 'kubectl rollout restart deployment/hospital-service'
-                sh 'kubectl rollout restart deployment/request-service'
-                sh 'kubectl rollout restart deployment/location-service'
-                sh 'kubectl rollout restart deployment/notification-service'
+                echo 'Deploying client UI to Kubernetes...'
+                sh 'kubectl apply -f k8s/client.yaml'
                 sh 'kubectl rollout restart deployment/client'
-                sh 'kubectl rollout status deployment/auth-service --timeout=60s'
-                sh 'kubectl rollout status deployment/donor-service --timeout=60s'
-                sh 'kubectl rollout status deployment/hospital-service --timeout=60s'
-                sh 'kubectl rollout status deployment/request-service --timeout=60s'
-                sh 'kubectl rollout status deployment/location-service --timeout=60s'
-                sh 'kubectl rollout status deployment/notification-service --timeout=60s'
                 sh 'kubectl rollout status deployment/client --timeout=60s'
             }
         }
@@ -132,15 +109,9 @@ pipeline {
         stage('Regression Tests') {
             when { branch 'main' }
             steps {
-                echo 'Running regression tests...'
+                echo 'Running client smoke test...'
                 sh '''
                     sleep 10
-                    curl -f http://localhost:30001/health && echo "✅ Auth OK"
-                    curl -f http://localhost:30002/health && echo "✅ Donor OK"
-                    curl -f http://localhost:30003/health && echo "✅ Hospital OK"
-                    curl -f http://localhost:30004/health && echo "✅ Request OK"
-                    curl -f http://localhost:30005/health && echo "✅ Location OK"
-                    curl -f http://localhost:30006/health && echo "✅ Notification OK"
                     curl -f http://localhost:30000 && echo "✅ Client OK"
                 '''
             }
