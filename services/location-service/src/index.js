@@ -1,58 +1,228 @@
-require('dotenv').config({ path: '../../.env' }); // Adjust path as needed
+require('dotenv').config({ path: '../../.env', quiet: true });
 
 const express = require('express');
-const jwt = require('jsonwebtoken');
 const cors = require('cors');
+const {
+    getDistance,
+    isPointWithinRadius
+} = require('geolib');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-const donors = []; // Shared? But for demo, mock
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const donorLocations = new Map();
 
-// Middleware to verify JWT
-const authenticate = (req, res, next) => {
-    const token = req.headers.authorization?.split(' ')[1];
-    if (!token) return res.status(401).json({ error: 'Access denied' });
-    try {
-        req.user = jwt.verify(token, JWT_SECRET);
-        next();
-    } catch {
-        res.status(401).json({ error: 'Invalid token' });
-    }
+const BLOOD_TYPES = new Set(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']);
+const DEFAULT_RADIUS_KM = 50;
+const MAX_RADIUS_KM = 500;
+
+// Recipient blood type -> donor blood types that can safely donate red cells.
+const compatibilityChart = {
+    'A+': ['A+', 'A-', 'O+', 'O-'],
+    'A-': ['A-', 'O-'],
+    'B+': ['B+', 'B-', 'O+', 'O-'],
+    'B-': ['B-', 'O-'],
+    'AB+': ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
+    'AB-': ['A-', 'B-', 'AB-', 'O-'],
+    'O+': ['O+', 'O-'],
+    'O-': ['O-']
 };
 
-// Health check
 app.get('/health', (req, res) => {
     res.json({ status: 'healthy', service: 'location-service' });
 });
 
-// Find nearby donors
-app.post('/location/nearby', authenticate, (req, res) => {
-    const { lat, lng, bloodType, radius } = req.body;
-    if (!lat || !lng || !bloodType || !radius) {
-        return res.status(400).json({ error: 'Lat, lng, bloodType, and radius are required' });
+app.post('/location/donor', (req, res) => {
+    const { donorId, bloodType } = req.body;
+    const point = readPoint(req.body);
+
+    if (!donorId) {
+        return res.status(400).json({ error: 'donorId is required' });
     }
-    // Mock: return donors within radius (in km), for demo
-    const nearby = donors.filter(d => d.bloodType === bloodType && d.available && Math.random() * 10 < radius); // Mock distance
-    res.json(nearby);
+
+    if (!point.valid) {
+        return res.status(400).json({ error: point.error });
+    }
+
+    if (bloodType !== undefined && bloodType !== null && !BLOOD_TYPES.has(bloodType)) {
+        return res.status(400).json({ error: 'bloodType must be one of A+, A-, B+, B-, AB+, AB-, O+, O-' });
+    }
+
+    const donorLocation = {
+        donorId: String(donorId),
+        latitude: point.latitude,
+        longitude: point.longitude,
+        bloodType: bloodType || null,
+        available: req.body.available !== false,
+        updatedAt: new Date().toISOString()
+    };
+
+    donorLocations.set(donorLocation.donorId, donorLocation);
+
+    res.json({ message: 'Location registered', donorId: donorLocation.donorId });
 });
 
-// Get distance
-app.get('/location/distance', authenticate, (req, res) => {
-    const { lat1, lng1, lat2, lng2 } = req.query;
-    if (!lat1 || !lng1 || !lat2 || !lng2) {
-        return res.status(400).json({ error: 'All lat/lng required' });
+app.get('/location/donor/:donorId', (req, res) => {
+    const donor = donorLocations.get(req.params.donorId);
+
+    if (!donor) {
+        return res.status(404).json({ error: 'Donor location not found' });
     }
-    // Mock distance calculation (in km)
-    const distance = Math.sqrt((lat2 - lat1) ** 2 + (lng2 - lng1) ** 2) * 111; // Rough approx
-    res.json({ distance: Math.round(distance * 100) / 100 });
+
+    res.json(donor);
 });
+
+app.delete('/location/donor/:donorId', (req, res) => {
+    const existed = donorLocations.delete(req.params.donorId);
+
+    if (!existed) {
+        return res.status(404).json({ error: 'Donor not found' });
+    }
+
+    res.json({ message: 'Donor location removed' });
+});
+
+app.post('/location/nearby', (req, res) => {
+    const hospitalPoint = readPoint(req.body);
+
+    if (!hospitalPoint.valid) {
+        return res.status(400).json({ error: hospitalPoint.error });
+    }
+
+    const radiusKm = parseRadiusKm(req.body.radiusKm ?? req.body.radius);
+    if (!radiusKm.valid) {
+        return res.status(400).json({ error: radiusKm.error });
+    }
+
+    if (req.body.bloodType && !BLOOD_TYPES.has(req.body.bloodType)) {
+        return res.status(400).json({ error: 'bloodType must be one of A+, A-, B+, B-, AB+, AB-, O+, O-' });
+    }
+
+    const radiusMetres = radiusKm.value * 1000;
+    const donors = Array.from(donorLocations.values())
+        .filter(donor => donor.available)
+        .filter(donor => isCompatible(donor.bloodType, req.body.bloodType))
+        .filter(donor => isPointWithinRadius(toGeoPoint(donor), hospitalPoint, radiusMetres))
+        .map(donor => {
+            const distanceMetres = getDistance(toGeoPoint(donor), hospitalPoint);
+
+            return {
+                ...donor,
+                distanceMetres,
+                distanceKm: roundToTwo(distanceMetres / 1000)
+            };
+        })
+        .sort((a, b) => a.distanceMetres - b.distanceMetres);
+
+    res.json({
+        hospital: {
+            latitude: hospitalPoint.latitude,
+            longitude: hospitalPoint.longitude
+        },
+        bloodType: req.body.bloodType || 'any',
+        radiusKm: radiusKm.value,
+        totalFound: donors.length,
+        donors
+    });
+});
+
+app.post('/location/distance', (req, res) => {
+    const from = readPoint(req.body.from || {});
+    const to = readPoint(req.body.to || {});
+
+    if (!from.valid || !to.valid) {
+        return res.status(400).json({ error: 'from and to coordinates are required' });
+    }
+
+    res.json(distanceResponse(from, to));
+});
+
+// Backward-compatible endpoint for existing clients that still call query params.
+app.get('/location/distance', (req, res) => {
+    const from = readPoint({ latitude: req.query.lat1, longitude: req.query.lng1 });
+    const to = readPoint({ latitude: req.query.lat2, longitude: req.query.lng2 });
+
+    if (!from.valid || !to.valid) {
+        return res.status(400).json({ error: 'lat1, lng1, lat2 and lng2 are required' });
+    }
+
+    res.json(distanceResponse(from, to));
+});
+
+function isCompatible(donorBloodType, recipientBloodType) {
+    if (!donorBloodType || !recipientBloodType) return true;
+
+    const compatibleDonors = compatibilityChart[recipientBloodType];
+    if (!compatibleDonors) return false;
+
+    return compatibleDonors.includes(donorBloodType);
+}
+
+function readPoint(source) {
+    const latitude = Number(source.latitude ?? source.lat);
+    const longitude = Number(source.longitude ?? source.lng);
+
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+        return { valid: false, error: 'latitude and longitude are required' };
+    }
+
+    if (latitude < -90 || latitude > 90) {
+        return { valid: false, error: 'latitude must be between -90 and 90' };
+    }
+
+    if (longitude < -180 || longitude > 180) {
+        return { valid: false, error: 'longitude must be between -180 and 180' };
+    }
+
+    return { valid: true, latitude, longitude };
+}
+
+function parseRadiusKm(value = DEFAULT_RADIUS_KM) {
+    const radiusKm = Number(value);
+
+    if (!Number.isFinite(radiusKm) || radiusKm <= 0) {
+        return { valid: false, error: 'radiusKm must be a positive number' };
+    }
+
+    if (radiusKm > MAX_RADIUS_KM) {
+        return { valid: false, error: `radiusKm must be ${MAX_RADIUS_KM} or less` };
+    }
+
+    return { valid: true, value: radiusKm };
+}
+
+function toGeoPoint(point) {
+    return {
+        latitude: point.latitude,
+        longitude: point.longitude
+    };
+}
+
+function distanceResponse(from, to) {
+    const distanceMetres = getDistance(from, to);
+
+    return {
+        distanceMetres,
+        distanceKm: roundToTwo(distanceMetres / 1000),
+        distanceMiles: roundToTwo(distanceMetres / 1609.34)
+    };
+}
+
+function roundToTwo(value) {
+    return Number(value.toFixed(2));
+}
 
 const PORT = process.env.PORT || 30005;
 /* istanbul ignore next */
 if (process.env.NODE_ENV !== 'test') {
     app.listen(PORT, () => console.log(`Location Service running on port ${PORT}`));
 }
-module.exports = app;
+
+module.exports = {
+    app,
+    donorLocations,
+    isCompatible,
+    readPoint,
+    parseRadiusKm
+};
