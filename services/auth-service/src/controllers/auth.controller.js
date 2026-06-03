@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { updateUserMetrics } = require('../metrics');
 
 const users = [];
 
@@ -31,6 +32,7 @@ const register = async (req, res, next) => {
             createdAt: new Date().toISOString()
         };
         users.push(user);
+        updateUserMetrics(users);
 
         res.status(201).json({ message: 'User registered', token: signToken(user), user: sanitizeUser(user) });
     } catch (error) {

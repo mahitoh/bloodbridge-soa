@@ -1,9 +1,11 @@
 const notificationService = require('../services/notification.service');
 const { successResponse } = require('../utils/apiResponse');
+const { notificationsSent } = require('../metrics');
 
 const sendSmsNotification = async (req, res, next) => {
     try {
         const notification = await notificationService.sendSmsNotification(req.body);
+        notificationsSent.inc({ type: 'sms', service: 'notification-service' });
         return successResponse(res, 202, 'SMS notification queued', notification);
     } catch (error) {
         next(error);
@@ -13,6 +15,7 @@ const sendSmsNotification = async (req, res, next) => {
 const sendEmailNotification = async (req, res, next) => {
     try {
         const notification = await notificationService.sendEmailNotification(req.body);
+        notificationsSent.inc({ type: 'email', service: 'notification-service' });
         return successResponse(res, 202, 'Email notification queued', notification);
     } catch (error) {
         next(error);

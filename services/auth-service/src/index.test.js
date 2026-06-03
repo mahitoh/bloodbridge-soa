@@ -8,6 +8,13 @@ describe('Auth Service', () => {
         expect(response.body).toEqual({ status: 'healthy', service: 'auth-service' });
     });
 
+    test('GET /metrics returns prometheus metrics', async () => {
+        const response = await request(app).get('/metrics');
+        expect(response.statusCode).toBe(200);
+        expect(response.text).toContain('http_requests_total');
+        expect(response.text).toContain('http_response_time_seconds');
+    });
+
     test('POST /auth/register, /auth/login, and /auth/verify should complete auth flow', async () => {
         const email = `amina-${Date.now()}@example.com`;
 
