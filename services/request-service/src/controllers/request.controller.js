@@ -1,3 +1,5 @@
+const { updateRequestMetrics } = require('../metrics');
+
 const bloodRequests = [
     {
         id: 'request_1',
@@ -29,6 +31,7 @@ const createRequest = (req, res) => {
         createdAt: new Date().toISOString()
     };
     bloodRequests.push(bloodRequest);
+    updateRequestMetrics(bloodRequests);
     res.status(201).json({ message: 'Blood request created', request: bloodRequest });
 };
 
@@ -36,6 +39,7 @@ const updateStatus = (req, res) => {
     const bloodRequest = bloodRequests.find((item) => item.id === req.params.id);
     if (!bloodRequest) return res.status(404).json({ error: 'Blood request not found' });
     bloodRequest.status = req.body.status;
+    updateRequestMetrics(bloodRequests);
     res.json({ message: 'Request status updated', request: bloodRequest });
 };
 

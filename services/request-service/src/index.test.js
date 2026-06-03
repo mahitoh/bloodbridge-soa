@@ -8,6 +8,13 @@ describe('Request Service', () => {
         expect(response.body).toEqual({ status: 'healthy', service: 'request-service' });
     });
 
+    test('GET /metrics returns prometheus metrics', async () => {
+        const response = await request(app).get('/metrics');
+        expect(response.statusCode).toBe(200);
+        expect(response.text).toContain('http_requests_total');
+        expect(response.text).toContain('bloodbridge_blood_requests_total');
+    });
+
     test('POST /requests should create request and update status', async () => {
         const createResponse = await request(app)
             .post('/requests')

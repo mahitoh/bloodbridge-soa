@@ -1,3 +1,5 @@
+const { updateDonorMetrics } = require('../metrics');
+
 const donors = [
     {
         id: 'donor_1',
@@ -24,6 +26,7 @@ const getDonor = (req, res) => {
 const createDonor = (req, res) => {
     const donor = { id: `donor_${Date.now()}`, ...req.body };
     donors.push(donor);
+    updateDonorMetrics(donors);
     res.status(201).json({ message: 'Donor created', donor });
 };
 
@@ -31,6 +34,7 @@ const updateAvailability = (req, res) => {
     const donor = donors.find((item) => item.id === req.params.id);
     if (!donor) return res.status(404).json({ error: 'Donor not found' });
     donor.available = req.body.available;
+    updateDonorMetrics(donors);
     res.json({ message: 'Availability updated', donor });
 };
 
