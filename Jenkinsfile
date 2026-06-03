@@ -100,6 +100,7 @@ pipeline {
             when { branch 'main' }
             steps {
                 echo 'Deploying client UI to Kubernetes...'
+                echo 'Backend services and ports are managed externally by VPS/orchestration.'
                 sh 'kubectl apply -f k8s/client.yaml'
                 sh 'kubectl rollout restart deployment/client'
                 sh 'kubectl rollout status deployment/client --timeout=60s'
@@ -110,9 +111,11 @@ pipeline {
             when { branch 'main' }
             steps {
                 echo 'Running client smoke test...'
+                echo 'Skipping backend health checks in this pipeline by design.'
                 sh '''
                     sleep 10
-                    curl -f http://localhost:30000 && echo "✅ Client OK"
+                    curl -fsS http://localhost:30000 | grep -q '<title>BloodBridge</title>'
+                    echo "✅ Client OK"
                 '''
             }
         }
