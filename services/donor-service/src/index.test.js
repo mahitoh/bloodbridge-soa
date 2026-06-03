@@ -1,13 +1,5 @@
 const request = require('supertest');
-const jwt = require('jsonwebtoken');
-const app = require('./index');
-
-const JWT_SECRET = 'your-secret-key';
-let token;
-
-beforeAll(() => {
-    token = jwt.sign({ id: 1, email: 'test@example.com', role: 'donor' }, JWT_SECRET);
-});
+const app = require('./app');
 
 describe('Donor Service', () => {
     test('GET /health should return 200 and status healthy', async () => {
@@ -16,70 +8,43 @@ describe('Donor Service', () => {
         expect(response.body).toEqual({ status: 'healthy', service: 'donor-service' });
     });
 
-    test('POST /donors should create a donor', async () => {
-        const donorData = {
-            name: 'John Doe',
-            email: 'john@example.com',
-            bloodType: 'O+',
-            location: 'Yaoundé',
-            phone: '+237123456789'
-        };
-        const response = await request(app)
+    test('POST /donors should create donor and update availability', async () => {
+        const createResponse = await request(app)
             .post('/donors')
-            .set('Authorization', `Bearer ${token}`)
-            .send(donorData);
-        expect(response.statusCode).toBe(201);
-        expect(response.body.name).toBe(donorData.name);
-        expect(response.body.bloodType).toBe(donorData.bloodType);
-    });
+            .send({ name: 'Brian Otieno', bloodType: 'A-', phone: '+254700000002', city: 'Mombasa' });
 
-    test('GET /donors/:id should return donor', async () => {
-        // Assuming donor with id 1 exists from previous test
-        const response = await request(app)
-            .get('/donors/1')
-            .set('Authorization', `Bearer ${token}`);
-        expect(response.statusCode).toBe(200);
-        expect(response.body.id).toBe(1);
-    });
+        expect(createResponse.statusCode).toBe(201);
+        expect(createResponse.body.donor.id).toBeDefined();
 
-    test('PUT /donors/:id should update donor', async () => {
-        const response = await request(app)
-            .put('/donors/1')
-            .set('Authorization', `Bearer ${token}`)
-            .send({ name: 'Jane Doe' });
-        expect(response.statusCode).toBe(200);
-        expect(response.body.name).toBe('Jane Doe');
-    });
-
-    test('PUT /donors/:id/availability should toggle availability', async () => {
-        const response = await request(app)
-            .put('/donors/1/availability')
-            .set('Authorization', `Bearer ${token}`)
+        const availabilityResponse = await request(app)
+            .put(`/donors/${createResponse.body.donor.id}/availability`)
             .send({ available: false });
-        expect(response.statusCode).toBe(200);
-        expect(response.body.available).toBe(false);
+
+        expect(availabilityResponse.statusCode).toBe(200);
+        expect(availabilityResponse.body.donor.available).toBe(false);
     });
 
-    test('GET /donors/blood/:type should return donors by blood type', async () => {
-        const response = await request(app)
-            .get('/donors/blood/O+')
-            .set('Authorization', `Bearer ${token}`);
-        expect(response.statusCode).toBe(200);
-        expect(Array.isArray(response.body)).toBe(true);
+    test('GET /donors should list and fetch donors', async () => {
+        const listResponse = await request(app).get('/donors');
+        expect(listResponse.statusCode).toBe(200);
+        expect(listResponse.body.donors.length).toBeGreaterThan(0);
+
+        const donorId = listResponse.body.donors[0].id;
+        const getResponse = await request(app).get(`/donors/${donorId}`);
+        expect(getResponse.statusCode).toBe(200);
+        expect(getResponse.body.donor.id).toBe(donorId);
     });
 
-    test('GET /donors/:id/history should return history', async () => {
-        const response = await request(app)
-            .get('/donors/1/history')
-            .set('Authorization', `Bearer ${token}`);
-        expect(response.statusCode).toBe(200);
-        expect(Array.isArray(response.body)).toBe(true);
-    });
+    test('donor endpoints should handle validation and not found cases', async () => {
+        const invalidResponse = await request(app).post('/donors').send({ name: 'A' });
+        expect(invalidResponse.statusCode).toBe(400);
 
-    test('GET /donors/:id should return 404 for non-existent donor', async () => {
-        const response = await request(app)
-            .get('/donors/999')
-            .set('Authorization', `Bearer ${token}`);
-        expect(response.statusCode).toBe(404);
+        const missingResponse = await request(app).get('/donors/missing');
+        expect(missingResponse.statusCode).toBe(404);
+
+        const missingAvailabilityResponse = await request(app)
+            .put('/donors/missing/availability')
+            .send({ available: true });
+        expect(missingAvailabilityResponse.statusCode).toBe(404);
     });
 });

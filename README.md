@@ -1,278 +1,258 @@
-# 🩸 BloodBridge SOA — Blood Donation Platform
+# BloodBridge SOA
 
-[![Build Status](https://img.shields.io/jenkins/build?jobUrl=https%3A%2F%2Fjenkins.example.com%2Fjob%2Fboodbridge-soa)](https://jenkins.example.com/job/bloodbridge-soa)
-[![Coverage](https://img.shields.io/badge/coverage-90%25-green)](https://jenkins.example.com/job/bloodbridge-soa)
-[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+> Service-oriented platform for coordinating blood donation workflows between donors and hospitals.
 
-A robust **Service-Oriented Architecture (SOA)** platform built for managing blood donations and connecting donors with hospitals in real-time. Designed to save lives by streamlining emergency blood requests, donor matching, and logistics in Cameroon and beyond.
+[![Node.js](https://img.shields.io/badge/Node.js-18%2B-339933?logo=node.js&logoColor=white)](#)
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](#)
+[![Express](https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white)](#)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
-**Course Project**: SEN3244 Software Architecture — ICT University Yaoundé
-
-## 📋 Table of Contents
+## Table of Contents
 
 - [Overview](#overview)
-- [Features](#features)
 - [Architecture](#architecture)
 - [Technology Stack](#technology-stack)
+- [Repository Structure](#repository-structure)
 - [Services](#services)
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
-- [Usage](#usage)
-- [API Documentation](#api-documentation)
-- [Testing](#testing)
-- [Deployment](#deployment)
+- [Getting Started](#getting-started)
+- [Running with Docker](#running-with-docker)
+- [Kubernetes Deployment](#kubernetes-deployment)
+- [Testing and Quality](#testing-and-quality)
+- [API Quick Reference](#api-quick-reference)
 - [Contributing](#contributing)
 - [License](#license)
-- [Authors](#authors)
 
-## 📖 Overview
+## Overview
 
-BloodBridge SOA is a microservices-based application that revolutionizes blood donation management. Hospitals can post urgent blood requests, the system matches nearby eligible donors based on blood type and location, and notifications ensure quick responses. Donors track their history and availability, while admins oversee the platform.
+BloodBridge is a microservices-based system where:
 
-**Key Goals**:
-- Reduce blood shortage crises in hospitals.
-- Empower donors with real-time notifications.
-- Provide scalable, maintainable architecture for future expansions.
+- **Hospitals** publish blood requests.
+- **Donors** can be discovered by blood type and location.
+- **Notification workflows** queue SMS/email communications.
+- **Auth** secures user sessions with JWT.
 
-## ✨ Features
+The current implementation is optimized for development and learning, with in-memory storage across services.
 
-- **🔐 Secure Authentication**: JWT-based login for donors, hospitals, and admins.
-- **🩸 Smart Matching**: Location-based donor search with blood type compatibility.
-- **📍 Real-Time Location**: GPS integration for proximity calculations.
-- **🔔 Instant Notifications**: SMS/email alerts for requests and updates.
-- **📊 Dashboard Analytics**: Stats for donors, hospitals, and admins.
-- **🔄 Microservices Design**: Independent, scalable services with Docker.
-- **🧪 Comprehensive Testing**: 90%+ code coverage with automated CI/CD.
+## Architecture
 
-## 🏗️ Architecture
+### 1) System Context
 
-The platform follows a **microservices architecture** with independent services communicating via REST APIs and shared databases (in-memory for demo, scalable to PostgreSQL/MongoDB).
-
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   React Client  │◄──►│  API Gateway    │◄──►│  Microservices  │
-│   (Frontend)    │    │  (Nginx/Envoy)  │    │                 │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-                                                        │
-                        ┌───────────────────────────────┼───────────────────────────────┐
-                        │                               │                               │
-                ┌───────▼───────┐               ┌───────▼───────┐               ┌───────▼───────┐
-                │ Auth Service  │               │ Donor Service  │               │ Hosp Service  │
-                │ (Port 30001)  │               │ (Port 30002)   │               │ (Port 30003)  │
-                └───────────────┘               └───────────────┘               └───────────────┘
-                        │                               │                               │
-                ┌───────▼───────┐               ┌───────▼───────┐               ┌───────▼───────┐
-                │ Req Service   │               │ Loc Service    │               │ Notif Service │
-                │ (Port 30004)  │               │ (Port 30005)   │               │ (Port 30006)  │
-                └───────────────┘               └───────────────┘               └───────────────┘
+```mermaid
+flowchart LR
+    U[Users: Donors / Hospitals / Admins] --> FE[React Client<br/>NodePort 30000]
+    FE --> A[Auth Service<br/>30001]
+    FE --> D[Donor Service<br/>30002]
+    FE --> H[Hospital Service<br/>30003]
+    FE --> R[Request Service<br/>30004]
+    FE --> L[Location Service<br/>30005]
+    FE --> N[Notification Service<br/>30006]
 ```
 
-- **Client**: Mobile-first React app with maps and dashboards.
-- **Services**: Node.js/Express with JWT auth and CORS.
-- **Database**: In-memory arrays (upgrade to Redis/PostgreSQL for production).
-- **CI/CD**: Jenkins pipeline with Husky pre-commit hooks.
+### 2) Core Request Flow (Hospital request to donor notification)
 
-## 🛠️ Technology Stack
+```mermaid
+sequenceDiagram
+    participant Hospital User
+    participant Client
+    participant Request Service
+    participant Location Service
+    participant Notification Service
+    participant Donor
 
-- **Frontend**: React 19 + Vite + Tailwind CSS + Leaflet (maps) + Axios
-- **Backend**: Node.js + Express.js + JWT + Bcrypt + CORS
-- **Testing**: Jest + Supertest (90% coverage)
-- **Deployment**: Docker + Kubernetes + Jenkins CI/CD
-- **Tools**: Git, Husky, ESLint, Prettier
+    Hospital User->>Client: Create blood request
+    Client->>Request Service: POST /requests
+    Request Service-->>Client: Request created
+    Client->>Location Service: POST /location/nearby
+    Location Service-->>Client: Eligible nearby donors
+    loop Per matched donor
+        Client->>Notification Service: POST /notify/donor
+        Notification Service-->>Client: SMS queued
+    end
+    Client-->>Hospital User: Request + outreach status
+    Notification Service-->>Donor: SMS/Email (queued provider)
+```
 
-## 📦 Services
+### 3) Deployment View (Kubernetes NodePort)
 
-1. **Auth Service** (Port 30001): User registration, login, JWT verification.
-2. **Donor Service** (Port 30002): Manage donors, availability, history, blood type search.
-3. **Hospital Service** (Port 30003): CRUD hospitals, bed management.
-4. **Request Service** (Port 30004): Blood requests, status updates (active/cancelled/fulfilled).
-5. **Location Service** (Port 30005): Nearby donor search, distance calculations.
-6. **Notification Service** (Port 30006): Send/receive notifications, mark as read.
+```mermaid
+flowchart TB
+    subgraph Cluster[BloodBridge K8s Cluster]
+      C[client:80<br/>NodePort 30000]
+      A[auth-service:3001<br/>NodePort 30001]
+      D[donor-service:3002<br/>NodePort 30002]
+      H[hospital-service:3003<br/>NodePort 30003]
+      R[request-service:3004<br/>NodePort 30004]
+      L[location-service:3005<br/>NodePort 30005]
+      N[notification-service:3006<br/>NodePort 30006]
+    end
+```
 
-Each service includes health checks, error handling, and unit tests.
+## Technology Stack
 
-## 📋 Prerequisites
+- **Frontend:** React 19, Vite, React Router, Axios, Tailwind CSS
+- **Backend:** Node.js, Express.js, Swagger UI
+- **Testing:** Jest (services), Vitest (client)
+- **Security Middleware:** Helmet, CORS
+- **Packaging/Deploy:** Docker, Kubernetes NodePort manifests
 
-- **Node.js** >= 18
-- **npm** or **yarn**
-- **Docker** (for containerized deployment)
-- **Git** (for cloning)
-- **Jenkins** (for CI/CD, optional for local dev)
+## Repository Structure
 
-## 🚀 Installation
+```text
+bloodbridge-soa/
+├── client/                         # React frontend
+├── services/
+│   ├── auth-service/
+│   ├── donor-service/
+│   ├── hospital-service/
+│   ├── request-service/
+│   ├── location-service/
+│   └── notification-service/
+├── k8s/                            # Kubernetes manifests
+├── infra/                          # Infrastructure automation assets
+├── test-all.sh                     # Runs all service + client tests
+├── DESIGN.md                       # Frontend/product design notes
+└── README.md
+```
 
-1. **Clone the Repository**:
-   ```bash
-   git clone https://github.com/mahitoh/bloodbridge-soa.git
-   cd bloodbridge-soa
-   ```
+## Services
 
-2. **Install Client Dependencies**:
-   ```bash
-   cd client
-   npm install
-   cd ..
-   ```
+| Service | Internal Port | NodePort | Responsibility |
+|---|---:|---:|---|
+| Auth Service | 3001 | 30001 | Register, login, JWT verification |
+| Donor Service | 3002 | 30002 | Donor CRUD and availability |
+| Hospital Service | 3003 | 30003 | Hospital CRUD |
+| Request Service | 3004 | 30004 | Blood request lifecycle |
+| Location Service | 3005 | 30005 | Nearby donor lookup and distance calculation |
+| Notification Service | 3006 | 30006 | SMS/email queueing and history |
+| Client | 80 | 30000 | Web UI for all user roles |
 
-3. **Install Service Dependencies** (for each service):
-   ```bash
-   for service in auth-service donor-service hospital-service request-service location-service notification-service; do
-     cd services/$service
-     npm install
-     cd ../..
-   done
-   ```
-   Or manually for each:
-   ```bash
-   cd services/auth-service && npm install && cd ../..
-   # Repeat for others
-   ```
+## Getting Started
 
-4. **Environment Variables** (create `.env` in root):
-   ```env
-   JWT_SECRET=your-super-secret-key
-   NODE_ENV=development
-   ```
+### Prerequisites
 
-## 🏃 Usage
+- Node.js 18+
+- npm 9+
 
-1. **Start Services** (each in separate terminals):
-   ```bash
-   # Auth Service
-   cd services/auth-service && npm start
+### 1) Clone
 
-   # Donor Service
-   cd services/donor-service && npm start
+```bash
+git clone https://github.com/mahitoh/bloodbridge-soa.git
+cd bloodbridge-soa
+```
 
-   # And so on for all 6 services...
-   ```
+### 2) Install dependencies
 
-2. **Start Client**:
-   ```bash
-   cd client
-   npm run dev  # Runs on http://localhost:5173
-   ```
+```bash
+npm install
+cd client && npm install && cd ..
+cd services/auth-service && npm install && cd ../..
+cd services/donor-service && npm install && cd ../..
+cd services/hospital-service && npm install && cd ../..
+cd services/request-service && npm install && cd ../..
+cd services/location-service && npm install && cd ../..
+cd services/notification-service && npm install && cd ../..
+```
 
-3. **Access the App**:
-   - Register as donor/hospital.
-   - Hospitals: Post blood requests.
-   - Donors: Receive notifications, toggle availability.
-   - Admins: Manage users/requests.
+### 3) Configure environment
 
-4. **Production Build**:
-   ```bash
-   cd client
-   npm run build
-   ```
+Copy each service `.env.example` to `.env` and adjust values if needed:
 
-## 📚 API Documentation
+- `services/auth-service/.env`
+- `services/donor-service/.env`
+- `services/hospital-service/.env`
+- `services/request-service/.env`
+- `services/location-service/.env`
+- `services/notification-service/.env`
 
-### Auth Service (Base: http://localhost:30001)
-- `POST /auth/register` — Register user (email, password, role)
-- `POST /auth/login` — Login and get JWT
-- `POST /auth/verify` — Verify JWT token
+### 4) Run services (separate terminals)
 
-### Donor Service (Base: http://localhost:30002)
-- `POST /donors` — Create donor
-- `GET /donors/:id` — Get donor details
-- `PUT /donors/:id` — Update donor
-- `PUT /donors/:id/availability` — Toggle availability
-- `GET /donors/blood/:type` — Search by blood type
-- `GET /donors/:id/history` — Donation history
+```bash
+cd services/auth-service && npm start
+cd services/donor-service && npm start
+cd services/hospital-service && npm start
+cd services/request-service && npm start
+cd services/location-service && npm start
+cd services/notification-service && npm start
+```
 
-### Hospital Service (Base: http://localhost:30003)
-- `POST /hospitals` — Create hospital
-- `GET /hospitals/:id` — Get hospital
-- `PUT /hospitals/:id` — Update hospital
-- `PUT /hospitals/:id/beds` — Update bed count
+### 5) Run client
 
-### Request Service (Base: http://localhost:30004)
-- `POST /requests` — Create blood request
-- `GET /requests` — List all requests
-- `GET /requests/:id` — Get request details
-- `PUT /requests/:id` — Update request
-- `PUT /requests/:id/cancel` — Cancel request
-- `PUT /requests/:id/fulfill` — Mark fulfilled
+```bash
+cd client
+npm run dev
+```
 
-### Location Service (Base: http://localhost:30005)
-- `POST /location/nearby` — Find nearby donors (lat, lng, bloodType, radius)
-- `GET /location/distance` — Calculate distance between points
+## Running with Docker
 
-### Notification Service (Base: http://localhost:30006)
-- `POST /notifications` — Send notification
-- `GET /notifications/:userId` — Get user notifications
-- `PUT /notifications/:id/read` — Mark as read
+Each component includes a Dockerfile.
 
-All endpoints require `Authorization: Bearer <JWT>` (except auth routes) and return JSON.
+Example:
 
-## 🧪 Testing
+```bash
+docker build -t bloodbridge-auth ./services/auth-service
+docker build -t bloodbridge-donor ./services/donor-service
+docker build -t bloodbridge-hospital ./services/hospital-service
+docker build -t bloodbridge-request ./services/request-service
+docker build -t bloodbridge-location ./services/location-service
+docker build -t bloodbridge-notification ./services/notification-service
+docker build -t bloodbridge-client ./client
+```
 
-Run all tests with coverage:
+## Kubernetes Deployment
+
+Apply manifests from the repository root:
+
+```bash
+kubectl apply -f k8s/auth-service.yaml
+kubectl apply -f k8s/donor-service.yaml
+kubectl apply -f k8s/hospital-service.yaml
+kubectl apply -f k8s/request-service.yaml
+kubectl apply -f k8s/location-service.yaml
+kubectl apply -f k8s/notification-service.yaml
+kubectl apply -f k8s/client.yaml
+```
+
+## Testing and Quality
+
+### Run all tests
+
 ```bash
 ./test-all.sh
 ```
 
-Or per service:
+### Run frontend lint/build
+
 ```bash
-cd services/auth-service
-npm test  # Includes coverage report
+cd client
+npm run lint
+npm run build
 ```
 
-- **Coverage**: >=90% for all services.
-- **CI/CD**: Jenkins runs tests on push; Husky blocks commits without passing tests.
+## API Quick Reference
 
-## 🚢 Deployment
+All services expose:
 
-1. **Docker Build**:
-   ```bash
-   docker build -t bloodbridge-client ./client
-   docker build -t bloodbridge-auth ./services/auth-service
-   # Build for each service
-   ```
+- `GET /health`
+- `GET /api-docs` (Swagger UI)
 
-2. **Docker Compose** (create `docker-compose.yml`):
-   ```yaml
-   version: '3.8'
-   services:
-     client:
-       image: bloodbridge-client
-       ports: ["3000:80"]
-     auth-service:
-       image: bloodbridge-auth
-       ports: ["30001:30001"]
-     # Add others...
-   ```
+Key business routes:
 
-3. **Kubernetes** (use provided `k8s/` manifests):
-   ```bash
-   kubectl apply -f k8s/
-   ```
+- **Auth:** `POST /auth/register`, `POST /auth/login`, `POST /auth/verify`
+- **Donors:** `GET /donors`, `POST /donors`, `GET /donors/:id`, `PUT /donors/:id/availability`
+- **Hospitals:** `GET /hospitals`, `POST /hospitals`, `GET /hospitals/:id`, `PUT /hospitals/:id`
+- **Requests:** `GET /requests`, `POST /requests`, `GET /requests/:id`, `PUT /requests/:id/status`
+- **Location:** `POST /location/nearby`, `POST /location/distance`
+- **Notifications:** `POST /notify/sms`, `POST /notify/email`, `POST /notify/donor`, `POST /notify/hospital`, `GET /notify/history`, `GET /notify/history/:id`
 
-4. **Jenkins Pipeline**: Automates builds, tests, and deploys on merge to main.
+## Contributing
 
-## 🤝 Contributing
+Contributions are welcome.
 
-1. Fork the repo.
-2. Create a feature branch: `git checkout -b feature/your-feature`.
-3. Commit changes: `git commit -m "Add your feature"`.
-4. Push and create a PR.
-5. Jenkins will test; merge after approval.
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Open a pull request
 
-**Guidelines**:
-- Follow ESLint/Prettier.
-- Write tests for new code.
-- Update README/docs for changes.
+## License
 
-## 📄 License
-
-Licensed under MIT License. See [LICENSE](LICENSE) for details.
-
-## 👥 Authors
-
-- **Mahito** — Developer (ICT University Yaoundé)
-- Course: SEN3244 Software Architecture
-
----
-
-*Built with ❤️ to save lives. Contribute and help make a difference!* 🚀</content>
-<parameter name="path">./bloodbridge-soa/README.md
+This project is licensed under the [MIT License](./LICENSE).
