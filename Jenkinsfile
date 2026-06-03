@@ -83,16 +83,17 @@ pipeline {
 
                         if ! git merge --no-ff $BRANCH_COMMIT -m "ci: auto-merge coverage passed"; then
                             CONFLICTS=$(git diff --name-only --diff-filter=U)
-                            REAL_CONFLICTS=$(printf "%s\\n" "$CONFLICTS" | grep -vE '(^|/)coverage/' || true)
+
+                            REAL_CONFLICTS=$(printf "%s\\n" "$CONFLICTS" | grep -vE '(^|/)coverage/|^Jenkinsfile$|^\\.gitignore$' || true)
 
                             if [ -n "$REAL_CONFLICTS" ]; then
-                                echo "Merge failed due to real source conflicts:"
+                                echo "❌ Merge failed due to real source conflicts:"
                                 printf "%s\\n" "$REAL_CONFLICTS"
                                 git merge --abort || true
                                 exit 1
                             fi
 
-                            echo "Only coverage files conflicted — resolving automatically..."
+                            echo "Only auto-resolvable files conflicted — resolving from branch..."
                             printf "%s\\n" "$CONFLICTS" | while IFS= read -r file; do
                                 [ -z "$file" ] && continue
                                 git checkout --theirs -- "$file" 2>/dev/null || git rm -f -- "$file"
