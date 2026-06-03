@@ -15,7 +15,7 @@ spec:
       containers:
       - name: notification-service
         image: bloodbridge-notification:latest
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Never
         ports:
         - containerPort: 3006
         livenessProbe:

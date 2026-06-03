@@ -13,40 +13,11 @@ pipeline {
             }
         }
 
-        stage('Verify Coverage Reports') {
+        stage('Run Tests and Coverage') {
             steps {
-                echo 'Jenkins reading coverage reports generated locally...'
-                script {
-                    def services = [
-                        'auth-service',
-                        'donor-service',
-                        'hospital-service',
-                        'request-service',
-                        'location-service',
-                        'notification-service'
-                    ]
-                    services.each { svc ->
-                        dir("services/${svc}") {
-                            sh """
-                                if [ -f coverage/coverage-summary.json ]; then
-                                    COVERAGE=\$(node -e "
-                                        const r = require('./coverage/coverage-summary.json');
-                                        const pct = r.total.lines.pct;
-                                        console.log(typeof pct === 'number' ? pct : 100);
-                                    ")
-                                    echo "${svc}: \$COVERAGE%"
-                                    if [ \$(echo "\$COVERAGE < 90" | bc -l) -eq 1 ]; then
-                                        echo "❌ ${svc} coverage \$COVERAGE% below 90% - blocked!"
-                                        exit 1
-                                    fi
-                                    echo "✅ ${svc} passed!"
-                                else
-                                    echo "⚠️ No coverage report for ${svc} - skipping"
-                                fi
-                            """
-                        }
-                    }
-                }
+                echo 'Running service and client tests with coverage gates...'
+                sh 'chmod +x ./test-all.sh'
+                sh './test-all.sh'
             }
         }
 
@@ -83,39 +54,74 @@ pipeline {
         stage('Build Docker Images') {
             when { branch 'main' }
             steps {
-                echo 'Building client Docker image...'
-                sh 'docker build -t bloodbridge-client:latest client'
+                echo 'Building Docker images...'
+                sh '''
+                    docker build -t bloodbridge-auth:latest services/auth-service
+                    docker build -t bloodbridge-donor:latest services/donor-service
+                    docker build -t bloodbridge-hospital:latest services/hospital-service
+                    docker build -t bloodbridge-request:latest services/request-service
+                    docker build -t bloodbridge-location:latest services/location-service
+                    docker build -t bloodbridge-notification:latest services/notification-service
+                    docker build -t bloodbridge-client:latest client
+                '''
             }
         }
 
         stage('Import Images into K3s') {
             when { branch 'main' }
             steps {
-                echo 'Importing client Docker image into K3s...'
-                sh 'docker save bloodbridge-client:latest | k3s ctr images import -'
+                echo 'Importing Docker images into K3s...'
+                sh '''
+                    docker save \
+                        bloodbridge-auth:latest \
+                        bloodbridge-donor:latest \
+                        bloodbridge-hospital:latest \
+                        bloodbridge-request:latest \
+                        bloodbridge-location:latest \
+                        bloodbridge-notification:latest \
+                        bloodbridge-client:latest \
+                        | k3s ctr images import -
+                '''
             }
         }
 
         stage('Deploy to Production') {
             when { branch 'main' }
             steps {
-                echo 'Deploying client UI to Kubernetes...'
-                echo 'Backend services and ports are managed externally by VPS/orchestration.'
-                sh 'kubectl apply -f k8s/client.yaml'
-                sh 'kubectl rollout restart deployment/client'
-                sh 'kubectl rollout status deployment/client --timeout=60s'
+                echo 'Deploying BloodBridge services to Kubernetes...'
+                sh 'kubectl apply -f k8s/'
+                sh '''
+                    for deployment in \
+                        auth-service \
+                        donor-service \
+                        hospital-service \
+                        request-service \
+                        location-service \
+                        notification-service \
+                        client
+                    do
+                        kubectl rollout restart "deployment/${deployment}"
+                        kubectl rollout status "deployment/${deployment}" --timeout=90s
+                    done
+                '''
             }
         }
 
         stage('Regression Tests') {
             when { branch 'main' }
             steps {
-                echo 'Running client smoke test...'
-                echo 'Skipping backend health checks in this pipeline by design.'
+                echo 'Running deployment smoke tests...'
                 sh '''
                     sleep 10
                     curl -fsS http://localhost:30000 | grep -q '<title>BloodBridge</title>'
+                    curl -fsS http://localhost:30001/health | grep -q 'auth-service'
+                    curl -fsS http://localhost:30002/health | grep -q 'donor-service'
+                    curl -fsS http://localhost:30003/health | grep -q 'hospital-service'
+                    curl -fsS http://localhost:30004/health | grep -q 'request-service'
+                    curl -fsS http://localhost:30005/health | grep -q 'location-service'
+                    curl -fsS http://localhost:30006/health | grep -q 'notification-service'
                     echo "✅ Client OK"
+                    echo "✅ Backend services OK"
                 '''
             }
         }
