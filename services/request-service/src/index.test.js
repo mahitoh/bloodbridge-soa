@@ -107,10 +107,10 @@ describe('Request Service', () => {
     test('PUT /requests/:id/status should update status', async () => {
         const statusResponse = await request(app)
             .put('/requests/test-request-id/status')
-            .send({ status: 'FULFILLED' });
+            .send({ status: 'Fulfilled' });
 
         expect(statusResponse.statusCode).toBe(200);
-        expect(statusResponse.body.request.status).toBe('FULFILLED');
+        expect(statusResponse.body.request.status).toBe('Fulfilled');
     });
 
     test('GET /requests should list requests', async () => {

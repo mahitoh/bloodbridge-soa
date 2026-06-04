@@ -133,7 +133,7 @@ describe('Hospital Service', () => {
     });
 
     test('GET /hospitals/:hospitalId/inventory should return inventory', async () => {
-        const response = await request(app).get('/hospitals/test-hospital-id/inventory');
+        const response = await request(app).get('/hospitals/123e4567-e89b-12d3-a456-426614174000/inventory');
         expect(response.statusCode).toBe(200);
         expect(response.body.inventory).toEqual([]);
     });
