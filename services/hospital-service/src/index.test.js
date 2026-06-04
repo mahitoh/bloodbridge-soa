@@ -83,12 +83,15 @@ jest.mock('./config/db', () => {
             });
         }
         if (query.includes('UPDATE blood_inventory') && query.includes('units_reserved = units_reserved +')) {
+            if (params[2] === 999) return Promise.resolve({ rows: [] }); // Trigger insufficient units error
             return Promise.resolve({ rows: [{ blood_type: params[1], units_available: 8, units_reserved: 2 }] });
         }
         if (query.includes('UPDATE blood_inventory') && query.includes('units_reserved = units_reserved -') && query.includes('units_available = units_available +')) {
+            if (params[2] === 999) return Promise.resolve({ rows: [] }); // Trigger cannot release error
             return Promise.resolve({ rows: [{ blood_type: params[1], units_available: 10, units_reserved: 0 }] });
         }
         if (query.includes('UPDATE blood_inventory') && query.includes('units_reserved = units_reserved -') && query.includes('units_available = units_available -')) {
+            if (params[2] === 999) return Promise.resolve({ rows: [] }); // Trigger insufficient reserved error
             return Promise.resolve({ rows: [{ blood_type: params[1], units_available: 8, units_reserved: 0 }] });
         }
 
