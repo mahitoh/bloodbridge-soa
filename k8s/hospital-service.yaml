@@ -18,6 +18,12 @@ spec:
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 3003
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: bloodbridge-secrets
+              key: DATABASE_URL
         livenessProbe:
           httpGet:
             path: /health
