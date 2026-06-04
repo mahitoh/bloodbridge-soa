@@ -1,0 +1,57 @@
+#!/bin/sh
+
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+
+echo ""
+echo "🔒 BloodBridge Push Gate"
+echo "========================"
+echo "Branch : $BRANCH"
+echo ""
+
+if [ "$BRANCH" = "main" ]; then
+    echo "❌ Direct push to main is NOT allowed!"
+    echo "   Create a feature branch first."
+    echo "   git checkout -b feature/your-feature-name"
+    echo ""
+    exit 1
+fi
+
+case "$BRANCH" in
+    feature/*|fix/*|chore/*|test/*)
+        echo "✅ Branch name valid: $BRANCH"
+        ;;
+    *)
+        echo "❌ Branch name '$BRANCH' not allowed!"
+        echo "   Use: feature/ fix/ chore/ test/"
+        echo ""
+        exit 1
+        ;;
+esac
+
+echo ""
+echo "🧪 Running tests and generating coverage..."
+echo ""
+
+./test-all.sh
+
+if [ $? -ne 0 ]; then
+    echo ""
+    echo "❌ Push blocked — coverage below 90%"
+    echo ""
+    exit 1
+fi
+
+echo ""
+echo "📦 Staging fresh coverage reports..."
+git add services/*/coverage/coverage-summary.json || true
+
+if ! git diff --cached --quiet; then
+    git commit --amend -m "$(git log -1 --format=%B)" --no-verify
+    echo "✅ Coverage reports amended into last commit"
+else
+    echo "✅ Coverage reports already up to date"
+fi
+
+echo ""
+echo "✅ All checks passed! Pushing..."
+echo ""
