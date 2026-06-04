@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import DashboardLayout from '../../components/layout/DashboardLayout';
-import BloodTypeBadge from '../../components/ui/BloodTypeBadge';
-import Button from '../../components/ui/Button';
-import StatCard from '../../components/ui/StatCard';
+import DashboardLayout from '../../../components/layout/DashboardLayout';
+import BloodTypeBadge from '../../../components/ui/BloodTypeBadge';
+import Button from '../../../components/ui/Button';
+import StatCard from '../../../components/ui/StatCard';
 import { 
-  Drop, 
+  Droplets, 
   RefreshCw, 
-  TrendingUp, 
-  TrendingDown, 
   Plus, 
   Minus,
   CheckCircle,
@@ -16,12 +14,9 @@ import {
   Loader2,
   Activity
 } from 'lucide-react';
-import { hospitalAPI } from '../../api/axios';
-import { useAuth } from '../../context/AuthContext';
-import InventoryTable from './InventoryTable';
-import InventoryControls from './InventoryControls';
-import InventoryChart from './InventoryChart';
-import SkeletonLoader from '../../components/ui/SkeletonLoader';
+import { hospitalAPI } from '../../../api/axios';
+import { useAuth } from '../../../context/AuthContext';
+import SkeletonLoader from '../../../components/ui/SkeletonLoader';
 
 const HospitalInventory = () => {
   const { user } = useAuth();
@@ -199,7 +194,7 @@ const HospitalInventory = () => {
         <StatCard 
           label="Total Units Available" 
           value={totalAvailable} 
-          icon={Drop} 
+          icon={Droplets} 
           color="red"
           trend={totalAvailable > 0 ? `+${totalAvailable}` : '0'}
         />
@@ -312,7 +307,7 @@ const HospitalInventory = () => {
           {/* Mock activity items - in real app this would come from API */}
           <div className="flex gap-3 p-4 bg-gray-50 rounded-xl">
             <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-primary-light text-primary-red">
-              <Drop size={18} />
+              <Droplets size={18} />
             </div>
             <div className="flex-1">
               <p className="text-sm font-bold text-gray-800">
