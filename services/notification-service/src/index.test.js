@@ -71,6 +71,13 @@ describe('Notification Service', () => {
         expect(response.body).toEqual({ status: 'healthy', service: 'notification-service' });
     });
 
+    test('GET /metrics returns prometheus metrics', async () => {
+        const response = await request(app).get('/metrics');
+        expect(response.statusCode).toBe(200);
+        expect(response.text).toContain('http_requests_total');
+        expect(response.text).toContain('bloodbridge_notifications_sent_total');
+    });
+
     test('POST /notify/donor should queue donor notification', async () => {
         const response = await request(app)
             .post('/notify/donor')

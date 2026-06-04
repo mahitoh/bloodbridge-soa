@@ -49,6 +49,13 @@ describe('Location Service', () => {
         expect(response.body).toEqual({ status: 'healthy', service: 'location-service' });
     });
 
+    test('GET /metrics returns prometheus metrics', async () => {
+        const response = await request(app).get('/metrics');
+        expect(response.statusCode).toBe(200);
+        expect(response.text).toContain('http_requests_total');
+        expect(response.text).toContain('http_response_time_seconds');
+    });
+
     test('POST /location/nearby should return nearby donors', async () => {
         const response = await request(app)
             .post('/location/nearby')

@@ -108,6 +108,13 @@ describe('Hospital Service', () => {
         expect(response.body).toEqual({ status: 'healthy', service: 'hospital-service' });
     });
 
+    test('GET /metrics returns prometheus metrics', async () => {
+        const response = await request(app).get('/metrics');
+        expect(response.statusCode).toBe(200);
+        expect(response.text).toContain('http_requests_total');
+        expect(response.text).toContain('http_response_time_seconds');
+    });
+
     test('POST /hospitals should create hospital', async () => {
         const response = await request(app)
             .post('/hospitals')
