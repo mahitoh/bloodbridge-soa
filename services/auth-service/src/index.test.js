@@ -1,8 +1,7 @@
 const request = require('supertest');
 const app = require('./app');
 
-// Mock the database pool - hoist mockQuery for test access
-let mockQuery;
+var mockQuery;
 
 jest.mock('./config/db', () => {
     mockQuery = jest.fn();
