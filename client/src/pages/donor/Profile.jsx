@@ -16,6 +16,7 @@ import {
   HeartPulse
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
+import { donorAPI } from '../../api/axios'
 
 const DonorProfile = () => {
   const { user } = useAuth()
@@ -28,9 +29,14 @@ const DonorProfile = () => {
     city: 'San Francisco, CA',
   })
 
-  const handleSave = () => {
-    // API call would go here
-    setIsEditing(false)
+  const handleSave = async () => {
+    try {
+      // API call to update donor profile
+      // await donorAPI.put(`/donors/${user?.id}`, formData)
+      setIsEditing(false)
+    } catch (error) {
+      console.error('Failed to update profile:', error)
+    }
   }
 
   return (
