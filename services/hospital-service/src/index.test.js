@@ -218,4 +218,28 @@ describe('Hospital Service', () => {
             .send({ unitsAvailable: -5, unitsReserved: 0 });
         expect(response.statusCode).toBe(400);
     });
+
+    test('POST /hospitals/:hospitalId/inventory/:bloodType/reserve should handle invalid units', async () => {
+        const response = await request(app)
+            .post('/hospitals/123e4567-e89b-12d3-a456-426614174000/inventory/O+/reserve')
+            .send({ units: 0 });
+        expect(response.statusCode).toBe(400);
+        expect(response.body.error).toBe('Valid units required');
+    });
+
+    test('POST /hospitals/:hospitalId/inventory/:bloodType/release should handle invalid units', async () => {
+        const response = await request(app)
+            .post('/hospitals/123e4567-e89b-12d3-a456-426614174000/inventory/O+/release')
+            .send({ units: -1 });
+        expect(response.statusCode).toBe(400);
+        expect(response.body.error).toBe('Valid units required');
+    });
+
+    test('POST /hospitals/:hospitalId/inventory/:bloodType/consume should handle invalid units', async () => {
+        const response = await request(app)
+            .post('/hospitals/123e4567-e89b-12d3-a456-426614174000/inventory/O+/consume')
+            .send({ units: 0 });
+        expect(response.statusCode).toBe(400);
+        expect(response.body.error).toBe('Valid units required');
+    });
 });
