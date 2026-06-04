@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import StatCard from '../../components/ui/StatCard'
 import BloodTypeBadge from '../../components/ui/BloodTypeBadge'
@@ -17,6 +17,8 @@ import {
 import { useAuth } from '../../context/AuthContext'
 import Button from '../../components/ui/Button'
 import { Link } from 'react-router-dom'
+import { donorAPI, requestAPI } from '../../api/axios'
+import { donorAPI } from '../../api/axios'
 
 const AvailabilityCard = ({ available, onToggle, lastDonationDate }) => {
   const nextEligibleDate = new Date(lastDonationDate)
@@ -87,12 +89,28 @@ const RequestMiniCard = ({ request }) => (
 const DonorDashboard = () => {
   const { user } = useAuth()
   const [available, setAvailable] = useState(true)
+  const [urgentRequests, setUrgentRequests] = useState([])
 
-  const urgentRequests = [
-    { id: 1, bloodType: 'O+', hospital: 'City Memorial Hospital', distance: 2.4, urgency: 'Critical', timeAgo: '10m ago' },
-    { id: 2, bloodType: 'O+', hospital: 'Red Cross Clinic', distance: 5.1, urgency: 'Urgent', timeAgo: '25m ago' },
-    { id: 3, bloodType: 'A-', hospital: 'St. Jude Medical Center', distance: 12.0, urgency: 'Standard', timeAgo: '1h ago' },
-  ]
+  useEffect(() => {
+    const fetchRequests = async () => {
+      try {
+        const response = await requestAPI.get('/requests')
+        setUrgentRequests(response.data.requests?.slice(0, 3) || [])
+      } catch (err) {
+        console.error('Failed to fetch requests:', err)
+      }
+    }
+    fetchRequests()
+  }, [])
+
+  const handleToggleAvailability = async () => {
+    try {
+      await donorAPI.put(`/donors/${user?.id}/availability`, { available: !available })
+      setAvailable(!available)
+    } catch (err) {
+      console.error('Failed to update availability:', err)
+    }
+  }
 
   return (
     <DashboardLayout>

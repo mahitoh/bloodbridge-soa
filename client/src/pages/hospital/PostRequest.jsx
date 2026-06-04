@@ -9,9 +9,12 @@ import {
   MapPin, 
   AlertCircle,
   Clock,
-  Navigation
+  Navigation,
+  Users
 } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
+import { requestAPI } from '../../api/axios'
+import { useAuth } from '../../context/AuthContext'
 
 const Step1 = ({ data, update, onNext }) => {
   const bloodTypes = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
@@ -194,9 +197,13 @@ const Step3 = ({ data, onBack, onSubmit }) => {
 
       <div className="flex justify-between">
         <Button onClick={onBack} className="btn-secondary px-8">Back</Button>
-        <Button onClick={onSubmit} className="btn-primary px-10 gap-2 h-12 bg-red-600 hover:bg-red-700">
-          🆘 Post Request Now
-        </Button>
+            <Button 
+              onClick={handleSubmit} 
+              disabled={loading}
+              className="btn-primary px-10 gap-2 h-12 bg-red-600 hover:bg-red-700 disabled:opacity-50"
+            >
+              {loading ? 'Posting...' : '🆘 Post Request Now'}
+            </Button>
       </div>
     </div>
   )
@@ -205,6 +212,9 @@ const Step3 = ({ data, onBack, onSubmit }) => {
 const PostRequest = () => {
   const [step, setStep] = useState(1)
   const [submitted, setSubmitted] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const { user } = useAuth()
   const [formData, setFormData] = useState({
     bloodType: '',
     units: 1,
@@ -218,8 +228,28 @@ const PostRequest = () => {
     setFormData(prev => ({ ...prev, ...updates }))
   }
 
-  const handleSubmit = () => {
-    setSubmitted(true)
+  const handleSubmit = async () => {
+    setLoading(true)
+    setError('')
+    try {
+      const response = await requestAPI.post('/requests', {
+        hospitalId: user?.id,
+        bloodType: formData.bloodType,
+        units: formData.units,
+        urgency: formData.urgency,
+        radius: formData.radius,
+        notes: formData.notes,
+        status: 'Active'
+      })
+      
+      if (response.status === 201) {
+        setSubmitted(true)
+      }
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to post request. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   if (submitted) {

@@ -15,17 +15,26 @@ export const requestAPI = axios.create({ baseURL: `${API_BASE}:${REQUEST_PORT}` 
 export const locationAPI = axios.create({ baseURL: `${API_BASE}:${LOCATION_PORT}` })
 export const notificationAPI = axios.create({ baseURL: `${API_BASE}:${NOTIFICATION_PORT}` })
 
-
-// Add JWT token to all requests
-const addAuth = (instance) => {
+const addAuthAndErrorHandling = (instance) => {
     instance.interceptors.request.use((config) => {
         const token = localStorage.getItem('token')
         if (token) config.headers.Authorization = `Bearer ${token}`
         return config
-    })
+    }, (error) => Promise.reject(error))
+
+    instance.interceptors.response.use(
+        (response) => response,
+        (error) => {
+            if (error.response?.status === 401) {
+                localStorage.removeItem('token')
+                window.location.href = '/login'
+            }
+            return Promise.reject(error)
+        }
+    )
 }
 
 const instances = [authAPI, donorAPI, hospitalAPI, requestAPI, locationAPI, notificationAPI]
-instances.forEach(addAuth)
+instances.forEach(addAuthAndErrorHandling)
 
 export default instances

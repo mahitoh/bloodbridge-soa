@@ -1,16 +1,17 @@
 const { z } = require('zod');
 
 const requestSchema = z.object({
-    hospitalId: z.string().min(1),
-    bloodType: z.string().min(1),
+    hospital_id: z.string().min(1),
+    blood_type: z.string().min(1),
     units: z.number().int().positive(),
-    urgency: z.enum(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']).default('MEDIUM'),
-    city: z.string().min(2),
-    notes: z.string().optional()
+    urgency: z.enum(['Standard', 'Urgent', 'Critical']).default('Standard'),
+    radius: z.number().int().positive().default(20),
+    notes: z.string().optional(),
+    status: z.enum(['Active', 'Fulfilled', 'Cancelled']).optional()
 });
 
 const statusSchema = z.object({
-    status: z.enum(['OPEN', 'MATCHED', 'FULFILLED', 'CANCELLED'])
+    status: z.enum(['Active', 'Fulfilled', 'Cancelled'])
 });
 
 const validate = (schema) => (req, res, next) => {

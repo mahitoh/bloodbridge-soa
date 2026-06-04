@@ -3,6 +3,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const swaggerUi = require('swagger-ui-express');
 const hospitalRoutes = require('./routes/hospital.routes');
+const bloodInventoryRoutes = require('./routes/bloodInventory.routes');
 const swaggerDocument = require('./docs/swagger');
 const { errorMiddleware, notFoundMiddleware } = require('./middleware/error.middleware');
 const metrics = require('./metrics');
@@ -37,6 +38,7 @@ app.get('/metrics', async (req, res) => {
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use('/hospitals', hospitalRoutes);
+app.use('/hospitals', bloodInventoryRoutes);
 
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);

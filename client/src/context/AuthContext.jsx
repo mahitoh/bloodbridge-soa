@@ -18,7 +18,6 @@ export const AuthProvider = ({ children }) => {
 
   const verifyToken = async (token) => {
     if (token === 'demo-token') {
-      // Mock user for demo purposes if token is demo-token
       setUser({ id: 'demo', name: 'Demo User', email: 'demo@bloodbridge.com', role: 'donor', bloodType: 'O+' })
       setLoading(false)
       return
@@ -44,7 +43,7 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       return {
         success: false,
-        message: error.response?.data?.message || 'Login failed'
+        message: error.response?.data?.error || error.response?.data?.message || 'Login failed'
       }
     }
   }

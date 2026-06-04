@@ -1,15 +1,74 @@
 require('dotenv').config();
 const app = require('./app');
+const pool = require('./config/db');
 
 const PORT = process.env.PORT || 3003;
 
-const server = app.listen(PORT, () => {
-    console.log(`Hospital Service running on port ${PORT}`);
+async function initDB() {
+    try {
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS hospitals (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                name VARCHAR(255) NOT NULL,
+                email VARCHAR(255) UNIQUE NOT NULL,
+                phone VARCHAR(50),
+                city VARCHAR(100),
+                address TEXT,
+                latitude DECIMAL(9,6),
+                longitude DECIMAL(9,6),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        console.log('✅ Database tables initialized for hospital-service');
+        
+        // Initialize blood inventory
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS blood_inventory (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                hospital_id UUID NOT NULL REFERENCES hospitals(id) ON DELETE CASCADE,
+                blood_type VARCHAR(5) NOT NULL,
+                units_available INTEGER DEFAULT 0,
+                units_reserved INTEGER DEFAULT 0,
+                last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(hospital_id, blood_type)
+            )
+        `);
+        console.log('✅ Blood inventory table initialized');
+        
+        // Initialize inventory for existing hospitals with default values
+        const hospitals = await pool.query('SELECT id FROM hospitals');
+        for (const hospital of hospitals.rows) {
+            const bloodTypes = ['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'];
+            for (const type of bloodTypes) {
+                await pool.query(`
+                    INSERT INTO blood_inventory (hospital_id, blood_type, units_available, units_reserved)
+                    VALUES ($1, $2, 0, 0)
+                    ON CONFLICT (hospital_id, blood_type) DO NOTHING
+                `, [hospital.id, type]);
+            }
+        }
+        console.log('✅ Blood inventory initialized for all hospitals');
+    } catch (err) {
+        console.error('❌ Failed to initialize database:', err);
+        process.exit(1);
+    }
+}
+
+initDB().then(() => {
+    const server = app.listen(PORT, () => {
+        console.log(`🚀 Hospital Service running on port ${PORT}`);
+    });
+
+    const shutdown = async () => {
+        server.close(async () => {
+            await pool.end();
+            process.exit(0);
+        });
+    };
+
+    process.on('SIGTERM', shutdown);
+    process.on('SIGINT', shutdown);
+}).catch(err => {
+    console.error('Failed to start service:', err);
+    process.exit(1);
 });
-
-const shutdown = () => {
-    server.close(() => process.exit(0));
-};
-
-process.on('SIGTERM', shutdown);
-process.on('SIGINT', shutdown);

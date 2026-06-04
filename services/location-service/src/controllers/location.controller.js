@@ -1,41 +1,59 @@
-const sampleDonors = [
-    { id: 'donor_1', name: 'Amina Noor', bloodType: 'O+', latitude: -1.2921, longitude: 36.8219, available: true },
-    { id: 'donor_2', name: 'Brian Otieno', bloodType: 'A-', latitude: -1.2833, longitude: 36.8167, available: true },
-    { id: 'donor_3', name: 'Grace Wanjiku', bloodType: 'O+', latitude: -1.4200, longitude: 36.9500, available: false }
-];
+const pool = require('../config/db');
+const redis = require('../config/redis');
 
-const toRadians = (degrees) => degrees * (Math.PI / 180);
+// Haversine formula to calculate distance in km
+const HAVERSINE_QUERY = `
+    SELECT id, name, blood_type, phone, city, latitude, longitude, available,
+    (6371 * acos(cos(radians($1)) * cos(radians(latitude)) * cos(radians(longitude) - radians($2)) + sin(radians($1)) * sin(radians(latitude)))) AS distance
+    FROM donors
+    WHERE available = true
+    HAVING (6371 * acos(cos(radians($1)) * cos(radians(latitude)) * cos(radians(longitude) - radians($2)) + sin(radians($1)) * sin(radians(latitude)))) <= $3
+    ORDER BY distance ASC
+`;
 
-const calculateDistanceKm = (from, to) => {
-    const earthRadiusKm = 6371;
-    const dLat = toRadians(to.latitude - from.latitude);
-    const dLon = toRadians(to.longitude - from.longitude);
-    const lat1 = toRadians(from.latitude);
-    const lat2 = toRadians(to.latitude);
+const findNearbyDonors = async (req, res, next) => {
+    try {
+        const { latitude, longitude, radius, blood_type } = req.body;
+        const cacheKey = `nearby:${latitude}:${longitude}:${radius}:${blood_type || 'all'}`;
 
-    const a = Math.sin(dLat / 2) ** 2
-        + Math.sin(dLon / 2) ** 2 * Math.cos(lat1) * Math.cos(lat2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return Number((earthRadiusKm * c).toFixed(2));
+        // Try cache first (valid for 60 seconds)
+        const cached = await redis.get(cacheKey);
+        if (cached) {
+            return res.json({ donors: JSON.parse(cached), source: 'cache' });
+        }
+
+        let query = HAVERSINE_QUERY;
+        const params = [latitude, longitude, radius];
+        let paramCount = 4;
+
+        if (blood_type) {
+            query += ` AND blood_type = $${paramCount}`;
+            params.push(blood_type);
+        }
+
+        const result = await pool.query(query, params);
+        
+        // Cache the result
+        await redis.set(cacheKey, JSON.stringify(result.rows), 'EX', 60);
+
+        res.json({ donors: result.rows, source: 'database' });
+    } catch (error) {
+        next(error);
+    }
 };
 
-const findNearbyDonors = (req, res) => {
-    const origin = { latitude: req.body.latitude, longitude: req.body.longitude };
-    const donors = sampleDonors
-        .filter((donor) => donor.available)
-        .filter((donor) => !req.body.bloodType || donor.bloodType === req.body.bloodType)
-        .map((donor) => ({
-            ...donor,
-            distanceKm: calculateDistanceKm(origin, donor)
-        }))
-        .filter((donor) => donor.distanceKm <= req.body.radiusKm)
-        .sort((a, b) => a.distanceKm - b.distanceKm);
+const getDistance = async (req, res, next) => {
+    try {
+        const { lat1, lon1, lat2, lon2 } = req.body;
+        
+        const result = await pool.query(`
+            SELECT (6371 * acos(cos(radians($1)) * cos(radians($3)) * cos(radians($4) - radians($2)) + sin(radians($1)) * sin(radians($3)))) AS distance
+        `, [lat1, lon1, lat2, lon2]);
 
-    res.json({ donors });
+        res.json({ distance_km: parseFloat(result.rows[0].distance).toFixed(2) });
+    } catch (error) {
+        next(error);
+    }
 };
 
-const getDistance = (req, res) => {
-    res.json({ distanceKm: calculateDistanceKm(req.body.from, req.body.to) });
-};
-
-module.exports = { findNearbyDonors, getDistance, calculateDistanceKm };
+module.exports = { findNearbyDonors, getDistance };

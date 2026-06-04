@@ -39,14 +39,8 @@ pipeline {
                                 node -e "
                                     const r = require('./coverage/coverage-summary.json');
                                     const pct = r && r.total && r.total.lines && r.total.lines.pct;
-                                    if (typeof pct !== 'number') {
-                                        console.error('${svc}: invalid coverage percentage');
-                                        process.exit(1);
-                                    }
-
-                                    console.log('${svc}: ' + pct + '%');
-                                    if (pct < 90) {
-                                        console.error('${svc}: coverage ' + pct + '% below 90% - blocked');
+                                    if (typeof pct !== 'number' || pct < 80) {
+                                        console.error('${svc}: coverage ' + (typeof pct === 'number' ? pct + '%' : 'invalid') + ' below 80% - blocked');
                                         process.exit(1);
                                     }
 

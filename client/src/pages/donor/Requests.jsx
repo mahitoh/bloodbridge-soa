@@ -1,9 +1,10 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import BloodTypeBadge from '../../components/ui/BloodTypeBadge'
 import Button from '../../components/ui/Button'
 import LiveMap from '../../components/map/LiveMap'
 import { MapPin, Clock, Filter, Search, ChevronRight, AlertTriangle } from 'lucide-react'
+import { requestAPI } from '../../api/axios'
 
 const RequestCard = ({ request }) => (
   <div className="card p-6 mb-4 group hover:border-primary-red/30 transition-all border-l-4 border-l-transparent hover:border-l-primary-red">
@@ -41,13 +42,22 @@ const RequestCard = ({ request }) => (
 
 const NearbyRequests = () => {
   const [filter, setFilter] = useState('All')
-  
-  const requests = [
-    { id: 1, bloodType: 'O+', hospital: 'City Memorial Hospital', distance: 2.4, urgency: 'Critical', timeAgo: '10m ago', expiry: '1h 20m' },
-    { id: 2, bloodType: 'O+', hospital: 'Red Cross Clinic', distance: 5.1, urgency: 'Urgent', timeAgo: '25m ago', expiry: '4h 45m' },
-    { id: 3, bloodType: 'A-', hospital: 'St. Jude Medical Center', distance: 12.0, urgency: 'Standard', timeAgo: '1h ago', expiry: '2 days' },
-    { id: 4, bloodType: 'B+', hospital: 'Hope General Hospital', distance: 8.5, urgency: 'Urgent', timeAgo: '2h ago', expiry: '6h 10m' },
-  ]
+  const [requests, setRequests] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchRequests = async () => {
+      try {
+        const response = await requestAPI.get('/requests')
+        setRequests(response.data.requests || [])
+      } catch (err) {
+        console.error('Failed to fetch requests:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchRequests()
+  }, [])
 
   return (
     <DashboardLayout>
