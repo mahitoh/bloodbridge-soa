@@ -16,12 +16,12 @@ jest.mock('./config/db', () => {
             return Promise.resolve({
                 rows: [{
                     id: 'test-user-id',
-                    name: params[0],
-                    email: params[1],
+                    name: params[0] || 'Test User',
+                    email: params[1] || 'test@example.com',
                     role: params[3] || 'DONOR',
-                    bloodtype: params[4],
-                    phone: params[5],
-                    city: params[6]
+                    bloodtype: params[4] || 'O+',
+                    phone: params[5] || '123',
+                    city: params[6] || 'City'
                 }]
             });
         }

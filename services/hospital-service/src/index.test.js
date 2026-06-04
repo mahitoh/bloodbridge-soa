@@ -3,7 +3,10 @@ const app = require('./app');
 
 // Mock the models
 jest.mock('./models/hospital.model', () => ({
-    getHospitalById: jest.fn().mockResolvedValue({ id: 'test-hospital-id', name: 'Test Hospital' })
+    getHospitalById: jest.fn().mockImplementation((id) => {
+        if (id === 'missing-id') return null;
+        return { id: 'test-hospital-id', name: 'Test Hospital' };
+    })
 }));
 
 jest.mock('./models/bloodInventory.model', () => ({
@@ -152,5 +155,27 @@ describe('Hospital Service', () => {
             .send({ units: 2 });
         expect(response.statusCode).toBe(200);
         expect(response.body.message).toContain('Reserved');
+    });
+
+    test('POST /hospitals/:hospitalId/inventory/:bloodType/release should release blood', async () => {
+        const response = await request(app)
+            .post('/hospitals/123e4567-e89b-12d3-a456-426614174000/inventory/O+/release')
+            .send({ units: 1 });
+        expect(response.statusCode).toBe(200);
+        expect(response.body.message).toContain('Released');
+    });
+
+    test('POST /hospitals/:hospitalId/inventory/:bloodType/consume should consume blood', async () => {
+        const response = await request(app)
+            .post('/hospitals/123e4567-e89b-12d3-a456-426614174000/inventory/O+/consume')
+            .send({ units: 1 });
+        expect(response.statusCode).toBe(200);
+        expect(response.body.message).toContain('Consumed');
+    });
+
+    test('GET /hospitals/:hospitalId/inventory should return 404 for missing hospital', async () => {
+        const response = await request(app).get('/hospitals/missing-id/inventory');
+        expect(response.statusCode).toBe(404);
+        expect(response.body.error).toBe('Hospital not found');
     });
 });
