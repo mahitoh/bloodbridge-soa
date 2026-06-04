@@ -18,7 +18,6 @@ import { useAuth } from '../../context/AuthContext'
 import Button from '../../components/ui/Button'
 import { Link } from 'react-router-dom'
 import { donorAPI, requestAPI } from '../../api/axios'
-import { donorAPI } from '../../api/axios'
 
 const AvailabilityCard = ({ available, onToggle, lastDonationDate }) => {
   const nextEligibleDate = new Date(lastDonationDate)
