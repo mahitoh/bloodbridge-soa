@@ -129,4 +129,15 @@ describe('Auth Service', () => {
         expect(response.statusCode).toBe(200);
         expect(response.text).toContain('Swagger UI');
     });
+
+    test('GET /nonexistent should return 404', async () => {
+        const response = await request(app).get('/nonexistent');
+        expect(response.statusCode).toBe(404);
+    });
+
+    test('auth endpoints should handle server errors gracefully', async () => {
+        mockQuery.mockRejectedValueOnce(new Error('Database connection failed'));
+        const response = await request(app).post('/auth/login').send({ email: 'test@example.com', password: 'secret123' });
+        expect(response.statusCode).toBe(500);
+    });
 });
