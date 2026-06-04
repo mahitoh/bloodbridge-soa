@@ -1,6 +1,5 @@
 const bloodInventoryModel = require('../models/bloodInventory.model');
 const hospitalModel = require('../models/hospital.model');
-const { updateHospitalMetrics } = require('../metrics');
 
 const getHospitalBloodInventory = async (req, res, next) => {
     try {

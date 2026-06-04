@@ -1,11 +1,9 @@
 const pool = require('../config/db');
 const redis = require('../config/redis');
-const { updateDonorMetrics } = require('../metrics');
 
 const listDonors = async (req, res, next) => {
     try {
         const result = await pool.query('SELECT id, name, blood_type, phone, city, latitude, longitude, available, created_at FROM donors ORDER BY created_at DESC');
-        updateDonorMetrics(result.rows);
         res.json({ donors: result.rows });
     } catch (error) {
         next(error);
@@ -55,7 +53,6 @@ const createDonor = async (req, res, next) => {
         await redis.del('donors:list');
         await redis.set(`donor:${donor.id}`, JSON.stringify(donor), 'EX', 3600);
         
-        updateDonorMetrics([donor]);
         res.status(201).json({ message: 'Donor created', donor });
     } catch (error) {
         next(error);
@@ -82,7 +79,6 @@ const updateAvailability = async (req, res, next) => {
         await redis.set(`donor:${id}`, JSON.stringify(donor), 'EX', 3600);
         await redis.del('donors:list'); // Invalidate list cache
         
-        updateDonorMetrics([donor]);
         res.json({ message: 'Availability updated', donor });
     } catch (error) {
         next(error);
