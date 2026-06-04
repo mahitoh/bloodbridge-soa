@@ -117,10 +117,16 @@ const HospitalDashboard = () => {
             <MapPin size={16} /> San Francisco, CA • Reg: BB-88291
           </p>
         </div>
-        <Link to="/hospital/requests/new" className="btn btn-primary gap-2 h-12 px-8 shadow-xl shadow-red-500/20">
-          <PlusCircle size={20} />
-          Post New Request
-        </Link>
+        <div className="flex flex-wrap gap-3">
+          <Link to="/hospital/inventory" className="btn btn-secondary gap-2 h-12 px-8">
+            <Drop size={20} />
+            Manage Inventory
+          </Link>
+          <Link to="/hospital/requests/new" className="btn btn-primary gap-2 h-12 px-8 shadow-xl shadow-red-500/20">
+            <PlusCircle size={20} />
+            Post New Request
+          </Link>
+        </div>
       </header>
 
       {/* Stats Grid */}
