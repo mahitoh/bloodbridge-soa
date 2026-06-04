@@ -4,7 +4,7 @@ const app = require('./app');
 // Mock the models
 jest.mock('./models/hospital.model', () => ({
     getHospitalById: jest.fn().mockImplementation((id) => {
-        if (id === 'missing-id') return null;
+        if (id === '00000000-0000-0000-0000-000000000000') return null;
         return { id: 'test-hospital-id', name: 'Test Hospital' };
     })
 }));
@@ -174,7 +174,7 @@ describe('Hospital Service', () => {
     });
 
     test('GET /hospitals/:hospitalId/inventory should return 404 for missing hospital', async () => {
-        const response = await request(app).get('/hospitals/missing-id/inventory');
+        const response = await request(app).get('/hospitals/00000000-0000-0000-0000-000000000000/inventory');
         expect(response.statusCode).toBe(404);
         expect(response.body.error).toBe('Hospital not found');
     });
