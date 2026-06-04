@@ -21,40 +21,48 @@ async function initDB() {
             )
         `);
         console.log('✅ Database tables initialized for notification-service');
-        
-        // Connect to RabbitMQ and start consuming
-        const channel = await connectRabbitMQ();
-        
-        console.log('📥 Starting to consume messages from blood_requests queue...');
-        channel.consume('blood_requests', async (msg) => {
-            if (msg !== null) {
-                try {
-                    const data = JSON.parse(msg.content.toString());
-                    console.log(`📩 Received request notification: ${data.bloodType}, Urgency: ${data.urgency}`);
-                    
-                    // In a real scenario, this would query the donor service for matching donors
-                    // and send them SMS/Email. For now, we log it and mock the sending.
-                    await pool.query(
-                        `INSERT INTO notifications (type, recipient, message, status, metadata) 
-                         VALUES ($1, $2, $3, $4, $5)`,
-                        ['system', 'queue-processor', `Processed request ${data.requestId}`, 'sent', JSON.stringify(data)]
-                    );
-                    
-                    channel.ack(msg);
-                } catch (err) {
-                    console.error('❌ Error processing message:', err);
-                    channel.nack(msg, false, true); // Requeue on error
-                }
-            }
-        }, { noAck: false });
-        
     } catch (err) {
-        console.error('❌ Failed to initialize database or RabbitMQ:', err);
+        console.error('❌ Failed to initialize database:', err);
         process.exit(1);
     }
 }
 
+function startConsumer() {
+    connectRabbitMQ()
+        .then(channel => {
+            if (!channel) {
+                console.log('⚠️  RabbitMQ channel not available. Queue consumer not started.');
+                return;
+            }
+            console.log('📥 Starting to consume messages from blood_requests queue...');
+            channel.consume('blood_requests', async (msg) => {
+                if (msg !== null) {
+                    try {
+                        const data = JSON.parse(msg.content.toString());
+                        console.log(`📩 Received request notification: ${data.bloodType}, Urgency: ${data.urgency}`);
+
+                        await pool.query(
+                            `INSERT INTO notifications (type, recipient, message, status, metadata)
+                             VALUES ($1, $2, $3, $4, $5)`,
+                            ['system', 'queue-processor', `Processed request ${data.requestId}`, 'sent', JSON.stringify(data)]
+                        );
+
+                        channel.ack(msg);
+                    } catch (err) {
+                        console.error('❌ Error processing message:', err);
+                        channel.nack(msg, false, true);
+                    }
+                }
+            }, { noAck: false });
+        })
+        .catch(err => {
+            console.error('⚠️  RabbitMQ connection failed. Queue processing disabled. Service will still respond to HTTP requests.', err.message);
+        });
+}
+
 initDB().then(() => {
+    startConsumer();
+
     const server = app.listen(PORT, () => {
         console.log(`🚀 Notification Service running on port ${PORT}`);
     });
