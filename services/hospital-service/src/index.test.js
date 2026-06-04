@@ -7,7 +7,7 @@ jest.mock('./config/db', () => {
     mockQuery.mockImplementation((query, params = []) => {
         // hospital.model.js & hospital.controller.js queries
         if (query.includes('SELECT id, name, email, phone, city, address, latitude, longitude, created_at FROM hospitals WHERE id = $1')) {
-            if (params[0] === '00000000-0000-0000-0000-000000000000') {
+            if (params[0] === '00000000-0000-0000-0000-000000000000' || params[0] === 'missing') {
                 return Promise.resolve({ rows: [] });
             }
             return Promise.resolve({
