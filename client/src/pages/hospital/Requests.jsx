@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import BloodTypeBadge from '../../components/ui/BloodTypeBadge'
 import Button from '../../components/ui/Button'
@@ -13,6 +13,8 @@ import {
   AlertCircle
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { requestAPI } from '../../api/axios'
+import { useAuth } from '../../context/AuthContext'
 
 const RequestRow = ({ request }) => {
   const getStatusColor = (status) => {
@@ -80,15 +82,24 @@ const RequestRow = ({ request }) => {
 }
 
 const HospitalRequests = () => {
+  const { user } = useAuth()
   const [activeTab, setActiveTab] = useState('All')
+  const [requests, setRequests] = useState([])
+  const [loading, setLoading] = useState(true)
 
-  const requests = [
-    { id: 1045, bloodType: 'O+', urgency: 'Critical', secured: 1, needed: 3, responses: 2, notified: 23, status: 'Active', date: 'Today, 10:30 AM' },
-    { id: 1042, bloodType: 'A-', urgency: 'Urgent', secured: 2, needed: 2, responses: 5, notified: 18, status: 'Pending', date: 'Yesterday, 02:15 PM' },
-    { id: 1038, bloodType: 'B+', urgency: 'Standard', secured: 4, needed: 4, responses: 12, notified: 45, status: 'Fulfilled', date: 'Oct 12, 09:00 AM' },
-    { id: 1035, bloodType: 'AB+', urgency: 'Critical', secured: 0, needed: 2, responses: 0, notified: 8, status: 'Cancelled', date: 'Oct 10, 11:45 AM' },
-    { id: 1034, bloodType: 'O-', urgency: 'Urgent', secured: 1, needed: 1, responses: 3, notified: 15, status: 'Fulfilled', date: 'Oct 09, 04:20 PM' },
-  ]
+  useEffect(() => {
+    const fetchRequests = async () => {
+      try {
+        const response = await requestAPI.get('/requests')
+        setRequests(response.data.requests || [])
+      } catch (err) {
+        console.error('Failed to fetch requests:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchRequests()
+  }, [])
 
   const tabs = ['All', 'Active', 'Pending', 'Fulfilled', 'Cancelled']
   
@@ -150,10 +161,20 @@ const HospitalRequests = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredRequests.map(req => (
-                <RequestRow key={req.id} request={req} />
-              ))}
-              {filteredRequests.length === 0 && (
+              {loading ? (
+                <tr>
+                  <td colSpan={6} className="p-16 text-center text-gray-500">
+                    <div className="flex justify-center mb-4">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-red"></div>
+                    </div>
+                    Loading requests...
+                  </td>
+                </tr>
+              ) : filteredRequests.length > 0 ? (
+                filteredRequests.map(req => (
+                  <RequestRow key={req.id} request={req} />
+                ))
+              ) : (
                 <tr>
                   <td colSpan={6} className="p-16 text-center text-gray-500">
                     <div className="flex justify-center mb-4 text-gray-300">
