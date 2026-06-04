@@ -3,4 +3,5 @@ node_modules/
 *.log
 .DS_Store
 **/coverage/
+!**/coverage/coverage-summary.json
 **/package-lock.json
