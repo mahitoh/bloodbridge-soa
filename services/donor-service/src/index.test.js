@@ -139,4 +139,14 @@ describe('Donor Service', () => {
             .send({ available: true });
         expect(missingAvailabilityResponse.statusCode).toBe(404);
     });
+
+    test('GET /donors/:id should return cached donor', async () => {
+        const redis = require('./config/redis');
+        redis.get.mockResolvedValueOnce(JSON.stringify({ id: 'cached-donor', name: 'Cached Donor', blood_type: 'O+', city: 'Cache City', available: true, created_at: new Date().toISOString() }));
+        
+        const response = await request(app).get('/donors/cached-donor');
+        expect(response.statusCode).toBe(200);
+        expect(response.body.donor.name).toBe('Cached Donor');
+        expect(response.body.source).toBe('cache');
+    });
 });
