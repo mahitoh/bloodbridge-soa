@@ -17,7 +17,7 @@ jest.mock('./models/bloodInventory.model', () => ({
 // Mock the database pool
 jest.mock('./config/db', () => {
     const mockQuery = jest.fn();
-    mockQuery.mockImplementation((query, params) => {
+    mockQuery.mockImplementation((query, params = []) => {
         if (query.includes('SELECT id, name, email')) {
             if (query.includes('WHERE id = $1') && params[0] === 'missing') {
                 return Promise.resolve({ rows: [] });
@@ -136,5 +136,21 @@ describe('Hospital Service', () => {
         const response = await request(app).get('/hospitals/123e4567-e89b-12d3-a456-426614174000/inventory');
         expect(response.statusCode).toBe(200);
         expect(response.body.inventory).toEqual([]);
+    });
+
+    test('PUT /hospitals/:hospitalId/inventory/:bloodType should update inventory', async () => {
+        const response = await request(app)
+            .put('/hospitals/123e4567-e89b-12d3-a456-426614174000/inventory/O+')
+            .send({ unitsAvailable: 10, unitsReserved: 0 });
+        expect(response.statusCode).toBe(200);
+        expect(response.body.message).toContain('updated successfully');
+    });
+
+    test('POST /hospitals/:hospitalId/inventory/:bloodType/reserve should reserve blood', async () => {
+        const response = await request(app)
+            .post('/hospitals/123e4567-e89b-12d3-a456-426614174000/inventory/O+/reserve')
+            .send({ units: 2 });
+        expect(response.statusCode).toBe(200);
+        expect(response.body.message).toContain('Reserved');
     });
 });

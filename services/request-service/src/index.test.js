@@ -4,7 +4,7 @@ const app = require('./app');
 // Mock the database pool
 jest.mock('./config/db', () => {
     const mockQuery = jest.fn();
-    mockQuery.mockImplementation((query, params) => {
+    mockQuery.mockImplementation((query, params = []) => {
         if (query.includes('SELECT id, hospital_id, blood_type')) {
             if (query.includes('WHERE id = $1') && params[0] === 'missing') {
                 return Promise.resolve({ rows: [] });
@@ -136,5 +136,11 @@ describe('Request Service', () => {
             .put('/requests/missing/status')
             .send({ status: 'Cancelled' });
         expect(missingStatusResponse.statusCode).toBe(404);
+    });
+
+    test('GET /requests should filter by status and blood_type', async () => {
+        const response = await request(app).get('/requests?status=Active&blood_type=O+');
+        expect(response.statusCode).toBe(200);
+        expect(response.body.requests).toBeDefined();
     });
 });

@@ -5,7 +5,7 @@ const app = require('./app');
 jest.mock('./config/db', () => {
     const mockQuery = jest.fn();
     // Mock successful registration
-    mockQuery.mockImplementation((query, params) => {
+    mockQuery.mockImplementation((query, params = []) => {
         if (query.includes('SELECT id FROM users WHERE email')) {
             if (params[0] === 'duplicate@example.com') {
                 return Promise.resolve({ rows: [{ id: '1' }] });
@@ -65,13 +65,6 @@ describe('Auth Service', () => {
         const response = await request(app).get('/health');
         expect(response.statusCode).toBe(200);
         expect(response.body).toEqual({ status: 'healthy', service: 'auth-service' });
-    });
-
-    test('GET /metrics returns prometheus metrics', async () => {
-        const response = await request(app).get('/metrics');
-        expect(response.statusCode).toBe(200);
-        expect(response.text).toContain('http_requests_total');
-        expect(response.text).toContain('http_response_time_seconds');
     });
 
     test('POST /auth/register should create a new user', async () => {

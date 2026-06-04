@@ -4,7 +4,7 @@ const app = require('./app');
 // Mock the database pool
 jest.mock('./config/db', () => {
     const mockQuery = jest.fn();
-    mockQuery.mockImplementation((query, params) => {
+    mockQuery.mockImplementation((query, params = []) => {
         if (query.includes('INSERT INTO notifications')) {
             return Promise.resolve({
                 rows: [{
