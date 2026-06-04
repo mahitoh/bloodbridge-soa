@@ -1,10 +1,11 @@
 const request = require('supertest');
 const app = require('./app');
 
-// Mock the database pool
+// Mock the database pool - hoist mockQuery for test access
+let mockQuery = jest.fn();
+
 jest.mock('./config/db', () => {
-    const mockQuery = jest.fn();
-    // Mock successful registration
+    mockQuery = jest.fn();
     mockQuery.mockImplementation((query, params = []) => {
         if (query.includes('SELECT id FROM users WHERE email')) {
             if (params[0] === 'duplicate@example.com') {
@@ -27,13 +28,12 @@ jest.mock('./config/db', () => {
         }
         if (query.includes('SELECT * FROM users WHERE email')) {
             if (params[0] === 'test@example.com') {
-                // Password is 'secret123' hashed
                 return Promise.resolve({
                     rows: [{
                         id: 'test-user-id',
                         name: 'Test User',
                         email: 'test@example.com',
-                        password: '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4.QhK5J5J5J5J5J5', // Mock hash for 'secret123'
+                        password: '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4.QhK5J5J5J5J5J5',
                         role: 'DONOR',
                         bloodtype: 'O+',
                         phone: '1234567890',
@@ -52,7 +52,7 @@ jest.mock('./config/db', () => {
     };
 });
 
-// We also need to mock bcrypt.compare to return true for our test user
+// Mock bcrypt
 jest.mock('bcryptjs', () => ({
     hash: jest.fn().mockResolvedValue('hashed-password'),
     compare: jest.fn().mockImplementation((password, hash) => {

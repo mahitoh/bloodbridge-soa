@@ -1,9 +1,11 @@
 const request = require('supertest');
 const app = require('./app');
 
-// Mock the database pool
+// Mock the database pool - hoist mockQuery for test access
+let mockQuery = jest.fn();
+
 jest.mock('./config/db', () => {
-    const mockQuery = jest.fn();
+    mockQuery = jest.fn();
     mockQuery.mockImplementation((query, params = []) => {
         if (query.includes('SELECT id, hospital_id, blood_type')) {
             if (query.includes('WHERE id = $1') && params[0] === 'missing') {
