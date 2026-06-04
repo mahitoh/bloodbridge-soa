@@ -217,4 +217,28 @@ describe('Hospital Service', () => {
         expect(response.statusCode).toBe(400);
         expect(response.body.error).toBe('Valid units required');
     });
+
+    test('POST /hospitals/:hospitalId/inventory/:bloodType/reserve should handle insufficient units', async () => {
+        const response = await request(app)
+            .post('/hospitals/123e4567-e89b-12d3-a456-426614174000/inventory/O+/reserve')
+            .send({ units: 999 });
+        expect(response.statusCode).toBe(400);
+        expect(response.body.error).toBe('Insufficient blood units available');
+    });
+
+    test('POST /hospitals/:hospitalId/inventory/:bloodType/release should handle insufficient reserved units', async () => {
+        const response = await request(app)
+            .post('/hospitals/123e4567-e89b-12d3-a456-426614174000/inventory/O+/release')
+            .send({ units: 999 });
+        expect(response.statusCode).toBe(400);
+        expect(response.body.error).toBe('Cannot release more units than reserved');
+    });
+
+    test('POST /hospitals/:hospitalId/inventory/:bloodType/consume should handle insufficient reserved units', async () => {
+        const response = await request(app)
+            .post('/hospitals/123e4567-e89b-12d3-a456-426614174000/inventory/O+/consume')
+            .send({ units: 999 });
+        expect(response.statusCode).toBe(400);
+        expect(response.body.error).toBe('Insufficient reserved units to consume');
+    });
 });
