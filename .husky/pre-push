@@ -43,7 +43,7 @@ fi
 
 echo ""
 echo "📦 Staging fresh coverage reports..."
-git add services/*/coverage/coverage-summary.json
+git add services/*/coverage/coverage-summary.json || true
 
 if ! git diff --cached --quiet; then
     git commit --amend -m "$(git log -1 --format=%B)" --no-verify
