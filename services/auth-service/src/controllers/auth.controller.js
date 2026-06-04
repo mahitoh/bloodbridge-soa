@@ -36,7 +36,6 @@ const register = async (req, res, next) => {
         );
 
         const user = result.rows[0];
-        updateUserMetrics([user]);
 
         res.status(201).json({ 
             message: 'User registered', 
