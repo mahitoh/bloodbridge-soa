@@ -37,9 +37,23 @@ const availableDonors = new client.Gauge({
   registers: [register]
 });
 
+const donorsByBloodType = new client.Gauge({
+  name: 'bloodbridge_donors_by_blood_type',
+  help: 'Donors grouped by blood type',
+  labelNames: ['blood_type'],
+  registers: [register]
+});
+
 const updateDonorMetrics = (donors) => {
   totalDonors.set(donors.length);
   availableDonors.set(donors.filter(d => d.available).length);
+  const bloodTypeCounts = donors.reduce((acc, d) => {
+    acc[d.bloodType] = (acc[d.bloodType] || 0) + 1;
+    return acc;
+  }, {});
+  Object.entries(bloodTypeCounts).forEach(([bloodType, count]) => {
+    donorsByBloodType.set({ blood_type: bloodType }, count);
+  });
 };
 
 module.exports = {
@@ -49,5 +63,6 @@ module.exports = {
   activeConnections,
   totalDonors,
   availableDonors,
+  donorsByBloodType,
   updateDonorMetrics
 };
