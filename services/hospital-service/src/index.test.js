@@ -1,6 +1,19 @@
 const request = require('supertest');
 const app = require('./app');
 
+// Mock the models
+jest.mock('./models/hospital.model', () => ({
+    getHospitalById: jest.fn().mockResolvedValue({ id: 'test-hospital-id', name: 'Test Hospital' })
+}));
+
+jest.mock('./models/bloodInventory.model', () => ({
+    getBloodInventoryByHospitalId: jest.fn().mockResolvedValue([]),
+    updateBloodInventory: jest.fn().mockResolvedValue({ blood_type: 'O+', units_available: 10, units_reserved: 0 }),
+    reserveBloodUnits: jest.fn().mockResolvedValue({ blood_type: 'O+', units_available: 8, units_reserved: 2 }),
+    releaseBloodUnits: jest.fn().mockResolvedValue({ blood_type: 'O+', units_available: 10, units_reserved: 0 }),
+    consumeBloodUnits: jest.fn().mockResolvedValue({ blood_type: 'O+', units_available: 8, units_reserved: 0 })
+}));
+
 // Mock the database pool
 jest.mock('./config/db', () => {
     const mockQuery = jest.fn();
@@ -117,5 +130,11 @@ describe('Hospital Service', () => {
 
         const missingResponse = await request(app).get('/hospitals/missing');
         expect(missingResponse.statusCode).toBe(404);
+    });
+
+    test('GET /hospitals/:hospitalId/inventory should return inventory', async () => {
+        const response = await request(app).get('/hospitals/test-hospital-id/inventory');
+        expect(response.statusCode).toBe(200);
+        expect(response.body.inventory).toEqual([]);
     });
 });

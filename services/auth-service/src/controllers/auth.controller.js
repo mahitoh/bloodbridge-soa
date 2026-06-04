@@ -1,7 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const pool = require('../config/db');
-const { updateUserMetrics } = require('../metrics');
 
 const signToken = (user) => jwt.sign(
     { id: user.id, email: user.email, role: user.role },

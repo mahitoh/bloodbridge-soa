@@ -2,7 +2,7 @@ const { z } = require('zod');
 
 const donorSchema = z.object({
     name: z.string().min(2),
-    bloodType: z.string().min(1),
+    blood_type: z.string().min(1),
     phone: z.string().min(5),
     city: z.string().min(2),
     latitude: z.number().optional(),

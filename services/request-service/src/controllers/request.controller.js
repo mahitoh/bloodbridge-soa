@@ -1,6 +1,5 @@
 const pool = require('../config/db');
 const { getChannel } = require('../config/rabbitmq');
-const { updateRequestMetrics } = require('../metrics');
 
 const listRequests = async (req, res, next) => {
     try {
@@ -23,7 +22,6 @@ const listRequests = async (req, res, next) => {
         query += ' ORDER BY created_at DESC';
 
         const result = await pool.query(query, params);
-        updateRequestMetrics(result.rows);
         res.json({ requests: result.rows });
     } catch (error) {
         next(error);
@@ -79,7 +77,6 @@ const createRequest = async (req, res, next) => {
             console.warn('⚠️ RabbitMQ channel not available, request created but not queued');
         }
 
-        updateRequestMetrics([request]);
         res.status(201).json({ message: 'Blood request created', request });
     } catch (error) {
         next(error);
