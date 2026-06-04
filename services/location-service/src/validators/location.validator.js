@@ -3,13 +3,15 @@ const { z } = require('zod');
 const nearbySchema = z.object({
     latitude: z.number(),
     longitude: z.number(),
-    radiusKm: z.number().positive().default(10),
-    bloodType: z.string().optional()
+    radius: z.number().positive().default(10),
+    blood_type: z.string().optional()
 });
 
 const distanceSchema = z.object({
-    from: z.object({ latitude: z.number(), longitude: z.number() }),
-    to: z.object({ latitude: z.number(), longitude: z.number() })
+    lat1: z.number(),
+    lon1: z.number(),
+    lat2: z.number(),
+    lon2: z.number()
 });
 
 const validate = (schema) => (req, res, next) => {

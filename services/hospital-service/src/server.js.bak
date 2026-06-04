@@ -20,8 +20,35 @@ async function initDB() {
             )
         `);
         console.log('✅ Database tables initialized for hospital-service');
-        
-        // Initialize blood inventory
+    } catch (err) {
+        console.error('❌ Failed to initialize database:', err);
+        process.exit(1);
+    }
+}
+
+initDB().then(() => {
+    const server = app.listen(PORT, () => {
+        console.log(`🚀 Hospital Service running on port ${PORT}`);
+    });
+
+    const shutdown = async () => {
+        server.close(async () => {
+            await pool.end();
+            process.exit(0);
+        });
+    };
+
+    process.on('SIGTERM', shutdown);
+    process.on('SIGINT', shutdown);
+}).catch(err => {
+    console.error('Failed to start service:', err);
+    process.exit(1);
+});
+
+
+// Blood inventory initialization
+async function initBloodInventory() {
+    try {
         await pool.query(`
             CREATE TABLE IF NOT EXISTS blood_inventory (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -49,26 +76,15 @@ async function initDB() {
         }
         console.log('✅ Blood inventory initialized for all hospitals');
     } catch (err) {
-        console.error('❌ Failed to initialize database:', err);
-        process.exit(1);
+        console.error('❌ Failed to initialize blood inventory:', err);
+        // Don't exit - inventory is important but not critical for basic hospital function
     }
 }
 
-initDB().then(() => {
-    const server = app.listen(PORT, () => {
-        console.log(`🚀 Hospital Service running on port ${PORT}`);
-    });
+// Update initDB to also initialize blood inventory
+const originalInitDB = initDB;
+initDB = async function() {
+    await originalInitDB();
+    await initBloodInventory();
+};
 
-    const shutdown = async () => {
-        server.close(async () => {
-            await pool.end();
-            process.exit(0);
-        });
-    };
-
-    process.on('SIGTERM', shutdown);
-    process.on('SIGINT', shutdown);
-}).catch(err => {
-    console.error('Failed to start service:', err);
-    process.exit(1);
-});
