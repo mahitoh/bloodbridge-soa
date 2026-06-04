@@ -37,7 +37,7 @@ const Register = () => {
     }
 
     setLoading(true)
-    const result = await register({ ...formData, role })
+    const result = await register({ ...formData, role: role.toUpperCase() })
     if (result.success) {
       navigate('/login')
     } else {
