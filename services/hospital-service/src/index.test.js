@@ -178,4 +178,16 @@ describe('Hospital Service', () => {
         expect(response.statusCode).toBe(404);
         expect(response.body.error).toBe('Hospital not found');
     });
+
+    test('POST /hospitals/:hospitalId/inventory/:bloodType/reserve should handle insufficient units', async () => {
+        // Mock the model to throw the specific error for this test
+        const bloodInventoryModel = require('./models/bloodInventory.model');
+        bloodInventoryModel.reserveBloodUnits.mockRejectedValueOnce(new Error('Insufficient blood units available'));
+        
+        const response = await request(app)
+            .post('/hospitals/123e4567-e89b-12d3-a456-426614174000/inventory/O+/reserve')
+            .send({ units: 999 });
+        expect(response.statusCode).toBe(400);
+        expect(response.body.error).toBe('Insufficient blood units available');
+    });
 });
