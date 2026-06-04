@@ -1,6 +1,82 @@
 const request = require('supertest');
 const app = require('./app');
 
+// Mock the database pool
+jest.mock('./config/db', () => {
+    const mockQuery = jest.fn();
+    mockQuery.mockImplementation((query, params) => {
+        if (query.includes('SELECT id, name, email')) {
+            if (query.includes('WHERE id = $1') && params[0] === 'missing') {
+                return Promise.resolve({ rows: [] });
+            }
+            if (query.includes('WHERE id = $1')) {
+                return Promise.resolve({
+                    rows: [{
+                        id: params[0],
+                        name: 'Updated Hospital',
+                        email: 'updated@example.com',
+                        phone: '+254700000005',
+                        city: 'Kisumu',
+                        address: 'Lake Road',
+                        latitude: null,
+                        longitude: null,
+                        created_at: new Date().toISOString()
+                    }]
+                });
+            }
+            return Promise.resolve({
+                rows: [{
+                    id: 'test-hospital-id',
+                    name: 'City Hospital',
+                    email: 'city@example.com',
+                    phone: '+254700000004',
+                    city: 'Nakuru',
+                    address: 'Main Street',
+                    latitude: null,
+                    longitude: null,
+                    created_at: new Date().toISOString()
+                }]
+            });
+        }
+        if (query.includes('INSERT INTO hospitals')) {
+            return Promise.resolve({
+                rows: [{
+                    id: 'new-hospital-id',
+                    name: params[0],
+                    email: params[1],
+                    phone: params[2],
+                    city: params[3],
+                    address: params[4],
+                    latitude: params[5],
+                    longitude: params[6],
+                    created_at: new Date().toISOString()
+                }]
+            });
+        }
+        if (query.includes('UPDATE hospitals')) {
+            if (params[7] === 'missing') {
+                return Promise.resolve({ rows: [] });
+            }
+            return Promise.resolve({
+                rows: [{
+                    id: params[7],
+                    name: params[0] || 'County Hospital',
+                    email: params[1] || 'county@example.com',
+                    phone: params[2] || '+254700000005',
+                    city: params[3] || 'Kisumu',
+                    address: params[4] || 'Lake Road',
+                    latitude: params[5],
+                    longitude: params[6],
+                    created_at: new Date().toISOString()
+                }]
+            });
+        }
+        return Promise.resolve({ rows: [] });
+    });
+
+    return { query: mockQuery, end: jest.fn() };
+});
+
 describe('Hospital Service', () => {
     test('GET /health should return 200 and status healthy', async () => {
         const response = await request(app).get('/health');
@@ -29,12 +105,8 @@ describe('Hospital Service', () => {
     });
 
     test('PUT /hospitals/:id should update hospital and handle failures', async () => {
-        const createResponse = await request(app)
-            .post('/hospitals')
-            .send({ name: 'County Hospital', email: 'county@example.com', phone: '+254700000005', city: 'Kisumu', address: 'Lake Road' });
-
         const updateResponse = await request(app)
-            .put(`/hospitals/${createResponse.body.hospital.id}`)
+            .put('/hospitals/test-hospital-id')
             .send({ name: 'County Referral Hospital', email: 'county@example.com', phone: '+254700000005', city: 'Kisumu', address: 'Lake Road' });
 
         expect(updateResponse.statusCode).toBe(200);
