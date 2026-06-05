@@ -24,7 +24,7 @@ app.use((req, res, next) => {
 
 app.use(helmet());
 app.use(cors({
-  origin: ['http://localhost:5173', 'https://mahitoh.github.io'],
+  origin: ['http://localhost:5173', 'https://mahitoh.github.io', 'http://64.225.100.80:30000'],
   credentials: true
 }));
 app.use(express.json());
