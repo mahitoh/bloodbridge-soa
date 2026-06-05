@@ -32,7 +32,7 @@ const Login = () => {
 
     const result = await login(formData)
     if (result.success) {
-      const role = result.user?.role
+      const role = result.user?.role?.toLowerCase()
       const home =
         role === 'donor' ? '/donor' : role === 'hospital' ? '/hospital' : role === 'admin' ? '/admin' : '/'
       navigate(home, { replace: true })
