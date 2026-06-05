@@ -7,7 +7,7 @@ router.post('/', verifyToken, validateHospital, createHospital);
 router.put('/:id', verifyToken, validateHospital, updateHospital);
 
 router.get('/', listHospitals);
-router.get('/:id', getHospital);
 router.get('/me', verifyToken, getMyHospital);
+router.get('/:id', getHospital);
 
 module.exports = router;
