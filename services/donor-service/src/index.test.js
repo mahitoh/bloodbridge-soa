@@ -149,4 +149,14 @@ describe('Donor Service', () => {
         expect(response.body.donor.name).toBe('Cached Donor');
         expect(response.body.source).toBe('cache');
     });
+
+    test('updateDonorMetrics should update donor gauges', () => {
+    const metrics = require('./metrics');
+
+    expect(() => metrics.updateDonorMetrics([
+        { available: true, blood_type: 'O+' },
+        { available: false, blood_type: 'A+' },
+        { available: true, blood_type: 'O+' }
+    ])).not.toThrow();
+});
 });
