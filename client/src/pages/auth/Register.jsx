@@ -54,7 +54,7 @@ const Register = () => {
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6 py-12">
       <div className="mb-8 text-center flex flex-col items-center">
         <Link to="/" className="w-16 h-16 flex items-center justify-center mb-4">
-          <img src="/favicon.svg" alt="BloodBridge Logo" className="w-full h-full object-contain drop-shadow-lg" />
+          <img src="favicon.svg" alt="BloodBridge Logo" className="w-full h-full object-contain drop-shadow-lg" />
         </Link>
         <h1 className="text-3xl font-bold text-gray-900">Create account</h1>
         <p className="text-gray-500 mt-1 max-w-md text-center">
