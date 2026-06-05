@@ -9,6 +9,20 @@ const AUTH_HEADER = { Authorization: `Bearer ${TEST_TOKEN}` };
 jest.mock('./config/db', () => {
     const mockQuery = jest.fn();
     mockQuery.mockImplementation((query, params = []) => {
+        if (query.includes('SELECT id, name, email, role FROM users WHERE id = $1')) {
+            if (params[0] === 'test-hospital') {
+                return Promise.resolve({
+                    rows: [{
+                        id: 'test-hospital',
+                        name: 'Test Hospital',
+                        email: 'hospital@test.com',
+                        role: 'hospital'
+                    }]
+                });
+            }
+            return Promise.resolve({ rows: [] });
+        }
+
         // hospital.model.js & hospital.controller.js queries
         if (query.includes('SELECT id, name, email, phone, city, address, latitude, longitude, created_at FROM hospitals WHERE id = $1')) {
             if (params[0] === '00000000-0000-0000-0000-000000000000' || params[0] === 'missing') {

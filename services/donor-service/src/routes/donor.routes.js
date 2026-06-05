@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { listDonors, getDonor, createDonor, updateAvailability, updateDonor } = require('../controllers/donor.controller');
+const { listDonors, getDonor, createDonor, updateAvailability, updateDonor, getDonorHistory } = require('../controllers/donor.controller');
 const { validateDonor, validateAvailability } = require('../validators/donor.validator');
 const { verifyToken } = require('../middleware/auth.middleware');
 
