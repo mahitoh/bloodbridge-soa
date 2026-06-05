@@ -23,6 +23,25 @@ jest.mock('./config/db', () => {
             });
         }
         if (query.includes('SELECT id, name, blood_type')) {
+            if (query.includes('WHERE email = $1')) {
+                if (params[0] === 'test@test.com') {
+                    return Promise.resolve({
+                        rows: [{
+                            id: 'test-donor-id',
+                            name: 'Test Donor',
+                            blood_type: 'O+',
+                            phone: '123',
+                            city: 'Test City',
+                            email: 'test@test.com',
+                            latitude: 0,
+                            longitude: 0,
+                            available: true,
+                            created_at: new Date().toISOString()
+                        }]
+                    });
+                }
+                return Promise.resolve({ rows: [] });
+            }
             if (query.includes('WHERE id = $1') && params[0] === 'missing') {
                 return Promise.resolve({ rows: [] });
             }
@@ -174,12 +193,22 @@ describe('Donor Service', () => {
     });
 
     test('updateDonorMetrics should update donor gauges', () => {
-    const metrics = require('./metrics');
+        const metrics = require('./metrics');
 
-    expect(() => metrics.updateDonorMetrics([
-        { available: true, blood_type: 'O+' },
-        { available: false, blood_type: 'A+' },
-        { available: true, blood_type: 'O+' }
-    ])).not.toThrow();
-});
+        expect(() => metrics.updateDonorMetrics([
+            { available: true, blood_type: 'O+' },
+            { available: false, blood_type: 'A+' },
+            { available: true, blood_type: 'O+' }
+        ])).not.toThrow();
+    });
+
+    test('GET /donors/me should return current donor profile', async () => {
+        const AUTH_HEADER2 = { Authorization: `Bearer ${jwt.sign({ id: 'test-user', email: 'test@test.com', role: 'donor' }, 'dev-secret')}` };
+        const response = await request(app)
+            .get('/donors/me')
+            .set(AUTH_HEADER2);
+
+        expect(response.statusCode).toBe(200);
+        expect(response.body.donor).toBeDefined();
+    });
 });

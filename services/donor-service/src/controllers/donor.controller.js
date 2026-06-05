@@ -38,13 +38,13 @@ const getDonor = async (req, res, next) => {
 
 const createDonor = async (req, res, next) => {
     try {
-        const { name, blood_type, phone, city, latitude, longitude, available } = req.body;
+        const { name, blood_type, phone, city, latitude, longitude, available, email } = req.body;
         
         const result = await pool.query(
-            `INSERT INTO donors (name, blood_type, phone, city, latitude, longitude, available) 
-             VALUES ($1, $2, $3, $4, $5, $6, $7) 
+            `INSERT INTO donors (name, blood_type, phone, city, latitude, longitude, available, email) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
              RETURNING id, name, blood_type, phone, city, latitude, longitude, available, created_at`,
-            [name, blood_type, phone, city, latitude, longitude, available !== undefined ? available : true]
+            [name, blood_type, phone, city, latitude, longitude, available !== undefined ? available : true, email]
         );
 
         const donor = result.rows[0];
@@ -150,4 +150,24 @@ const getDonorHistory = async (req, res, next) => {
     }
 };
 
-module.exports = { listDonors, getDonor, createDonor, updateAvailability, updateDonor, getDonorHistory };
+const getDonorByEmail = async (req, res, next) => {
+    try {
+        const email = req.user?.email;
+        if (!email) return res.status(401).json({ error: 'Unauthorized' });
+
+        const result = await pool.query(
+            'SELECT id, name, blood_type, phone, city, latitude, longitude, available, email, created_at FROM donors WHERE email = $1',
+            [email]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Donor profile not found' });
+        }
+
+        res.json({ donor: result.rows[0] });
+    } catch (error) {
+        next(error);
+    }
+};
+
+module.exports = { listDonors, getDonor, createDonor, updateAvailability, updateDonor, getDonorHistory, getDonorByEmail };

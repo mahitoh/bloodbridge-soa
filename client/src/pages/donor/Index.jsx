@@ -108,8 +108,22 @@ const CheckCircle = ({ size }) => (
 
 const DonorDashboard = () => {
   const { user } = useAuth()
+  const [donorId, setDonorId] = useState(null)
   const [available, setAvailable] = useState(true)
   const [urgentRequests, setUrgentRequests] = useState([])
+
+  useEffect(() => {
+    const fetchDonor = async () => {
+      if (!user?.email) return
+      try {
+        const response = await donorAPI.get('/donors/me')
+        setDonorId(response.data.donor.id)
+      } catch (err) {
+        console.error('Failed to fetch donor profile:', err)
+      }
+    }
+    fetchDonor()
+  }, [user])
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -125,7 +139,7 @@ const DonorDashboard = () => {
 
   const handleToggleAvailability = async () => {
     try {
-      await donorAPI.put(`/donors/${user?.id}/availability`, { available: !available })
+      await donorAPI.put(`/donors/${donorId}/availability`, { available: !available })
       setAvailable(!available)
     } catch (err) {
       console.error('Failed to update availability:', err)

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import BloodTypeBadge from '../../components/ui/BloodTypeBadge'
 import Button from '../../components/ui/Button'
@@ -22,6 +22,7 @@ import { donorAPI } from '../../api/axios'
 
 const DonorProfile = () => {
   const { user } = useAuth()
+  const [donor, setDonor] = useState(null)
   const [isEditing, setIsEditing] = useState(false)
   const [formData, setFormData] = useState({
     name: user?.name || 'John Doe',
@@ -31,9 +32,29 @@ const DonorProfile = () => {
     city: 'San Francisco, CA',
   })
 
+  useEffect(() => {
+    const fetchDonor = async () => {
+      if (!user?.email) return
+      try {
+        const response = await donorAPI.get('/donors/me')
+        setDonor(response.data.donor)
+        setFormData({
+          name: response.data.donor.name || user?.name || 'John Doe',
+          email: user?.email || 'john@example.com',
+          phone: response.data.donor.phone || '+1 (555) 123-4567',
+          dob: response.data.donor.date_of_birth || '1990-05-15',
+          city: response.data.donor.city || 'San Francisco, CA',
+        })
+      } catch (err) {
+        console.error('Failed to fetch donor profile:', err)
+      }
+    }
+    fetchDonor()
+  }, [user])
+
   const handleSave = async () => {
     try {
-      await donorAPI.put(`/donors/${user?.id}`, {
+      await donorAPI.put(`/donors/${donor?.id}`, {
         name: formData.name,
         phone: formData.phone,
         city: formData.city.split(',')[0].trim()
@@ -42,6 +63,7 @@ const DonorProfile = () => {
     } catch (error) {
       console.error('Failed to update profile:', error)
     }
+  }
   }
 
   return (

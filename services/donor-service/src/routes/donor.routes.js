@@ -1,9 +1,10 @@
 const router = require('express').Router();
-const { listDonors, getDonor, createDonor, updateAvailability, updateDonor, getDonorHistory } = require('../controllers/donor.controller');
+const { listDonors, getDonor, createDonor, updateAvailability, updateDonor, getDonorHistory, getDonorByEmail } = require('../controllers/donor.controller');
 const { validateDonor, validateAvailability } = require('../validators/donor.validator');
 const { verifyToken } = require('../middleware/auth.middleware');
 
 router.get('/', listDonors);
+router.get('/me', verifyToken, getDonorByEmail);
 router.get('/:id', getDonor);
 router.get('/:id/history', getDonorHistory);
 
