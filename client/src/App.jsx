@@ -35,7 +35,7 @@ const ProtectedRoute = ({ children, role }) => {
 
 function App() {
   return (
-    <Router>
+    <Router basename="/bloodbridge-soa">
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
