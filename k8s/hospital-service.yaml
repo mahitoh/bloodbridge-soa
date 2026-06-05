@@ -24,6 +24,11 @@ spec:
             secretKeyRef:
               name: bloodbridge-secrets
               key: DATABASE_URL
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: bloodbridge-secrets
+              key: JWT_SECRET
         livenessProbe:
           httpGet:
             path: /health

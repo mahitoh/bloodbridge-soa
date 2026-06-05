@@ -21,6 +21,20 @@ async function initDB() {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS requests (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                hospital_id UUID NOT NULL,
+                blood_type VARCHAR(5) NOT NULL,
+                units INTEGER NOT NULL,
+                urgency VARCHAR(20) NOT NULL,
+                radius INTEGER DEFAULT 20,
+                notes TEXT,
+                status VARCHAR(20) DEFAULT 'Active',
+                accepted_by_donor_id UUID,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
         console.log('✅ Database tables initialized for donor-service');
         
         // Test Redis connection

@@ -120,12 +120,9 @@ const getDonorHistory = async (req, res, next) => {
         const { id } = req.params;
 
         const historyResult = await pool.query(
-            `SELECT r.id, r.blood_type, r.units, r.urgency, r.status, r.notes, r.created_at,
-                    h.name as hospital_name, h.city as hospital_city
-             FROM requests r
-             JOIN hospitals h ON r.hospital_id = h.id
-             WHERE r.accepted_by_donor_id = $1
-             ORDER BY r.created_at DESC`,
+            `SELECT id, blood_type, units, urgency, status, notes, created_at FROM requests
+             WHERE accepted_by_donor_id = $1
+             ORDER BY created_at DESC`,
             [id]
         );
 
@@ -133,7 +130,7 @@ const getDonorHistory = async (req, res, next) => {
             const dt = new Date(row.created_at)
             return {
                 id: row.id,
-                hospital: row.hospital_name,
+                hospital: 'General Hospital',
                 bloodType: row.blood_type,
                 units: row.units,
                 urgency: row.urgency,
