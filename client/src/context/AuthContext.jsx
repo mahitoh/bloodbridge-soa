@@ -7,6 +7,7 @@ const AuthContext = createContext()
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
+  const navigate = useNavigate()
 
   useEffect(() => {
     const token = localStorage.getItem('token')
@@ -21,12 +22,11 @@ export const AuthProvider = ({ children }) => {
     const handler = () => {
       setUser(null)
       setLoading(false)
+      navigate('/login')
     }
     window.addEventListener('auth:logout', handler)
     return () => window.removeEventListener('auth:logout', handler)
-  }, [])
-
-  const navigate = useNavigate()
+  }, [navigate])
 
   const verifyToken = async (token) => {
     if (token === 'demo-token') {

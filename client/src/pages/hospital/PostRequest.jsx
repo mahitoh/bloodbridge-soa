@@ -215,6 +215,7 @@ const PostRequest = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const { user } = useAuth()
+  const [hospitalId, setHospitalId] = useState(null)
   const [formData, setFormData] = useState({
     bloodType: '',
     units: 1,
@@ -223,6 +224,19 @@ const PostRequest = () => {
     notes: ''
   })
   const navigate = useNavigate()
+
+  useEffect(() => {
+    const fetchHospital = async () => {
+      if (!user?.email) return
+      try {
+        const response = await hospitalAPI.get('/hospitals/me')
+        setHospitalId(response.data.hospital.id)
+      } catch (err) {
+        console.error('Failed to fetch hospital:', err)
+      }
+    }
+    fetchHospital()
+  }, [user])
 
   const updateFormData = (updates) => {
     setFormData(prev => ({ ...prev, ...updates }))
@@ -233,7 +247,7 @@ const PostRequest = () => {
     setError('')
     try {
       const response = await requestAPI.post('/requests', {
-        hospitalId: user?.id,
+        hospitalId,
         bloodType: formData.bloodType,
         units: formData.units,
         urgency: formData.urgency,
@@ -241,7 +255,7 @@ const PostRequest = () => {
         notes: formData.notes,
         status: 'Active'
       })
-      
+
       if (response.status === 201) {
         setSubmitted(true)
       }

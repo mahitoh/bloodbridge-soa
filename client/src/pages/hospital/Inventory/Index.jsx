@@ -20,6 +20,7 @@ import SkeletonLoader from '../../../components/ui/SkeletonLoader';
 
 const HospitalInventory = () => {
   const { user } = useAuth();
+  const [hospital, setHospital] = useState(null);
   const [inventoryData, setInventoryData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -27,16 +28,29 @@ const HospitalInventory = () => {
   const [chartData, setChartData] = useState([]);
 
   useEffect(() => {
+    const fetchHospital = async () => {
+      if (!user?.email) return;
+      try {
+        const response = await hospitalAPI.get('/hospitals/me');
+        setHospital(response.data.hospital);
+      } catch (err) {
+        setError('Failed to load hospital data');
+      }
+    };
+    fetchHospital();
+  }, [user]);
+
+  useEffect(() => {
     const fetchInventory = async () => {
-      if (!user?.id) return;
-      
+      if (!hospital?.id) return;
+
       setLoading(true);
       setError(null);
-      
+
       try {
-        const response = await hospitalAPI.get(`/hospitals/${user.id}/inventory`);
+        const response = await hospitalAPI.get(`/hospitals/${hospital.id}/inventory`);
         setInventoryData(response.data.inventory || []);
-        
+
         // Prepare chart data
         const chartData = response.data.inventory?.map(item => ({
           name: item.blood_type,
@@ -54,19 +68,19 @@ const HospitalInventory = () => {
     };
 
     fetchInventory();
-  }, [user?.id]);
+  }, [hospital]);
 
   const handleUpdateInventory = async (bloodType, { unitsAvailable, unitsReserved }) => {
     setLoading(true);
     try {
-      await hospitalAPI.put(`/hospitals/${user.id}/inventory/${bloodType}`, {
+      await hospitalAPI.put(`/hospitals/${hospital.id}/inventory/${bloodType}`, {
         unitsAvailable,
         unitsReserved
       });
       // Refetch inventory after update
-      const response = await hospitalAPI.get(`/hospitals/${user.id}/inventory`);
+      const response = await hospitalAPI.get(`/hospitals/${hospital.id}/inventory`);
       setInventoryData(response.data.inventory || []);
-      
+
       // Update chart data
       const newChartData = response.data.inventory?.map(item => ({
         name: item.blood_type,
@@ -87,11 +101,11 @@ const HospitalInventory = () => {
   const handleReserveBlood = async (bloodType, units) => {
     setLoading(true);
     try {
-      await hospitalAPI.post(`/hospitals/${user.id}/inventory/${bloodType}/reserve`, { units });
+      await hospitalAPI.post(`/hospitals/${hospital.id}/inventory/${bloodType}/reserve`, { units });
       // Refetch inventory after reservation
-      const response = await hospitalAPI.get(`/hospitals/${user.id}/inventory`);
+      const response = await hospitalAPI.get(`/hospitals/${hospital.id}/inventory`);
       setInventoryData(response.data.inventory || []);
-      
+
       // Update chart data
       const newChartData = response.data.inventory?.map(item => ({
         name: item.blood_type,
@@ -112,11 +126,11 @@ const HospitalInventory = () => {
   const handleReleaseBlood = async (bloodType, units) => {
     setLoading(true);
     try {
-      await hospitalAPI.post(`/hospitals/${user.id}/inventory/${bloodType}/release`, { units });
+      await hospitalAPI.post(`/hospitals/${hospital.id}/inventory/${bloodType}/release`, { units });
       // Refetch inventory after release
-      const response = await hospitalAPI.get(`/hospitals/${user.id}/inventory`);
+      const response = await hospitalAPI.get(`/hospitals/${hospital.id}/inventory`);
       setInventoryData(response.data.inventory || []);
-      
+
       // Update chart data
       const newChartData = response.data.inventory?.map(item => ({
         name: item.blood_type,
@@ -134,13 +148,13 @@ const HospitalInventory = () => {
     }
   };
 
-  if (loading && inventoryData.length === 0) {
+  if (loading && inventoryData.length === 0 && !hospital) {
     return (
       <DashboardLayout>
         <div className="text-center py-12">
-          <Loader2 size={48} className="mb-4 text-primary-red" />
-          <h3 className="text-xl font-bold text-gray-900">Loading Blood Inventory...</h3>
-          <p className="text-gray-500">Fetching current blood stock levels</p>
+          <Loader2 size={48} className="mb-4 text-primary-red animate-spin" />
+          <h3 className="text-xl font-bold text-gray-900">Loading Hospital Data...</h3>
+          <p className="text-gray-500">Fetching your hospital profile</p>
         </div>
       </DashboardLayout>
     );
@@ -153,7 +167,7 @@ const HospitalInventory = () => {
           <AlertTriangle size={48} className="mb-4 text-critical" />
           <h3 className="text-xl font-bold text-gray-900">Error Loading Inventory</h3>
           <p className="text-gray-500">{error}</p>
-          <Button 
+          <Button
             onClick={() => window.location.reload()}
             className="mt-6"
           >
@@ -180,7 +194,7 @@ const HospitalInventory = () => {
           </p>
         </div>
         <div className="flex items-center gap-4">
-          <Button 
+          <Button
             onClick={() => window.location.reload()}
             variant="outline"
           >
@@ -191,24 +205,24 @@ const HospitalInventory = () => {
 
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <StatCard 
-          label="Total Units Available" 
-          value={totalAvailable} 
-          icon={Droplets} 
+        <StatCard
+          label="Total Units Available"
+          value={totalAvailable}
+          icon={Droplets}
           color="red"
           trend={totalAvailable > 0 ? `+${totalAvailable}` : '0'}
         />
-        <StatCard 
-          label="Units Reserved" 
-          value={totalReserved} 
-          icon={Activity} 
+        <StatCard
+          label="Units Reserved"
+          value={totalReserved}
+          icon={Activity}
           color="orange"
           trend={totalReserved > 0 ? `+${totalReserved}` : '0'}
         />
-        <StatCard 
-          label="Total Inventory" 
-          value={totalUnits} 
-          icon={Activity} 
+        <StatCard
+          label="Total Inventory"
+          value={totalUnits}
+          icon={Activity}
           color="blue"
         />
       </div>
@@ -221,14 +235,14 @@ const HospitalInventory = () => {
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold">Current Blood Stock Levels</h3>
               <div className="flex items-center gap-2">
-                <Button 
+                <Button
                   onClick={() => setSelectedBloodType(null)}
                   variant="outline"
                   size="sm"
                 >
                   Clear Filter
                 </Button>
-                <Button 
+                <Button
                   onClick={() => {
                     // Add mock data for demonstration
                     const updated = [...inventoryData];
@@ -244,17 +258,17 @@ const HospitalInventory = () => {
                 </Button>
               </div>
             </div>
-            
+
             {selectedBloodType ? (
               <div className="space-y-4">
-                <BloodTypeBadge 
-                  type={selectedBloodType} 
+                <BloodTypeBadge
+                  type={selectedBloodType}
                   className="mb-2"
                 />
                 <h3 className="text-lg font-bold text-gray-900">
                   {selectedBloodType} Inventory Details
                 </h3>
-                <InventoryTable 
+                <InventoryTable
                   data={inventoryData.filter(item => item.blood_type === selectedBloodType)}
                   onUpdate={handleUpdateInventory}
                   onReserve={handleReserveBlood}
@@ -263,7 +277,7 @@ const HospitalInventory = () => {
                 />
               </div>
             ) : (
-              <InventoryTable 
+              <InventoryTable
                 data={inventoryData}
                 onUpdate={handleUpdateInventory}
                 onReserve={handleReserveBlood}
@@ -276,11 +290,11 @@ const HospitalInventory = () => {
 
         {/* Inventory Chart and Controls */}
         <div className="space-y-6">
-          <InventoryChart 
-            data={chartData} 
+          <InventoryChart
+            data={chartData}
             loading={loading}
           />
-          <InventoryControls 
+          <InventoryControls
             bloodTypes={bloodTypes}
             selectedBloodType={selectedBloodType}
             onSelectType={setSelectedBloodType}
@@ -296,7 +310,7 @@ const HospitalInventory = () => {
       <div className="mt-8">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-bold">Recent Inventory Activity</h3>
-          <Button 
+          <Button
             variant="outline"
             size="sm"
           >
@@ -318,7 +332,7 @@ const HospitalInventory = () => {
               </p>
             </div>
           </div>
-          
+
           <div className="flex gap-3 p-4 bg-gray-50 rounded-xl">
             <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-warning-light text-warning">
               <AlertTriangle size={18} />
@@ -332,7 +346,7 @@ const HospitalInventory = () => {
               </p>
             </div>
           </div>
-          
+
           <div className="flex gap-3 p-4 bg-gray-50 rounded-xl">
             <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-success-light text-success">
               <CheckCircle size={18} />

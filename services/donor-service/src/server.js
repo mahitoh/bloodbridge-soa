@@ -16,6 +16,7 @@ async function initDB() {
                 city VARCHAR(100),
                 latitude DECIMAL(9,6),
                 longitude DECIMAL(9,6),
+                email VARCHAR(255) UNIQUE,
                 available BOOLEAN DEFAULT true,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )

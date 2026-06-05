@@ -3,7 +3,7 @@ import { clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 
 const Input = ({ label, error, className, id, name, ...props }) => {
-  const inputId = id || name || Math.random().toString(36).slice(2, 9)
+  const inputId = id || (name ? `input-${name}` : Math.random().toString(36).slice(2, 9))
   
   return (
     <div className="w-full space-y-1">
