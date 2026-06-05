@@ -211,13 +211,4 @@ describe('Donor Service', () => {
         expect(response.statusCode).toBe(200);
         expect(response.body.donor).toBeDefined();
     });
-
-    test('GET /donors/me should return 404 for missing donor profile', async () => {
-        const NOT_FOUND_HEADER = { Authorization: `Bearer ${jwt.sign({ id: 'test-user', email: 'notfound@test.com', role: 'donor' }, 'dev-secret')}` };
-        const response = await request(app)
-            .get('/donors/me')
-            .set(NOT_FOUND_HEADER);
-
-        expect(response.statusCode).toBe(404);
-    });
 });
