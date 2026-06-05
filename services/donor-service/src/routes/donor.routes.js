@@ -1,10 +1,13 @@
 const router = require('express').Router();
-const { listDonors, getDonor, createDonor, updateAvailability } = require('../controllers/donor.controller');
+const { listDonors, getDonor, createDonor, updateAvailability, updateDonor } = require('../controllers/donor.controller');
 const { validateDonor, validateAvailability } = require('../validators/donor.validator');
+const { verifyToken } = require('../middleware/auth.middleware');
 
 router.get('/', listDonors);
-router.post('/', validateDonor, createDonor);
 router.get('/:id', getDonor);
-router.put('/:id/availability', validateAvailability, updateAvailability);
+
+router.post('/', verifyToken, validateDonor, createDonor);
+router.put('/:id/availability', verifyToken, validateAvailability, updateAvailability);
+router.put('/:id', verifyToken, updateDonor);
 
 module.exports = router;

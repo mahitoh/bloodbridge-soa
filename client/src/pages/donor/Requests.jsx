@@ -5,8 +5,9 @@ import Button from '../../components/ui/Button'
 import LiveMap from '../../components/map/LiveMap'
 import { MapPin, Clock, Filter, Search, ChevronRight, AlertTriangle } from 'lucide-react'
 import { requestAPI } from '../../api/axios'
+import { useAuth } from '../../context/AuthContext'
 
-const RequestCard = ({ request }) => (
+const RequestCard = ({ request, onAccept, isAccepting }) => (
   <div className="card p-6 mb-4 group hover:border-primary-red/30 transition-all border-l-4 border-l-transparent hover:border-l-primary-red">
     <div className="flex justify-between items-start mb-4">
       <div className="flex gap-4">
@@ -34,16 +35,24 @@ const RequestCard = ({ request }) => (
     </div>
 
     <div className="flex gap-3">
-      <Button className="flex-1 btn-primary">I Can Help</Button>
+      <Button 
+        className="flex-1 btn-primary" 
+        disabled={isAccepting}
+        onClick={() => onAccept(request.id)}
+      >
+        {isAccepting ? 'Accepting...' : 'I Can Help'}
+      </Button>
       <Button className="btn-secondary px-3">Not Available</Button>
     </div>
   </div>
 )
 
 const NearbyRequests = () => {
+  const { user } = useAuth()
   const [filter, setFilter] = useState('All')
   const [requests, setRequests] = useState([])
   const [loading, setLoading] = useState(true)
+  const [acceptingId, setAcceptingId] = useState(null)
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -58,6 +67,20 @@ const NearbyRequests = () => {
     }
     fetchRequests()
   }, [])
+
+  const handleAccept = async (requestId) => {
+    setAcceptingId(requestId)
+    try {
+      await requestAPI.post(`/requests/${requestId}/accept`)
+      setRequests(prev => prev.map(r => 
+        r.id === requestId ? { ...r, status: 'Fulfilled' } : r
+      ))
+    } catch (err) {
+      console.error('Failed to accept request:', err)
+    } finally {
+      setAcceptingId(null)
+    }
+  }
 
   return (
     <DashboardLayout>
@@ -104,7 +127,7 @@ const NearbyRequests = () => {
           {/* List View */}
           <div className="w-full lg:w-[400px] overflow-y-auto pr-2 scrollbar-hide">
             {requests.length > 0 ? (
-              requests.map(req => <RequestCard key={req.id} request={req} />)
+              requests.map(req => <RequestCard key={req.id} request={req} onAccept={handleAccept} isAccepting={acceptingId === req.id} />)
             ) : (
               <div className="card text-center py-12">
                 <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">

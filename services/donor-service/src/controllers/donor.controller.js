@@ -74,15 +74,45 @@ const updateAvailability = async (req, res, next) => {
         }
 
         const donor = result.rows[0];
-        
-        // Update cache
+
         await redis.set(`donor:${id}`, JSON.stringify(donor), 'EX', 3600);
-        await redis.del('donors:list'); // Invalidate list cache
-        
+        await redis.del('donors:list');
+
         res.json({ message: 'Availability updated', donor });
     } catch (error) {
         next(error);
     }
 };
 
-module.exports = { listDonors, getDonor, createDonor, updateAvailability };
+const updateDonor = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { name, blood_type, phone, city } = req.body;
+
+        const result = await pool.query(
+            `UPDATE donors 
+             SET name = COALESCE($1, name), 
+                 blood_type = COALESCE($2, blood_type), 
+                 phone = COALESCE($3, phone), 
+                 city = COALESCE($4, city) 
+             WHERE id = $5 
+             RETURNING id, name, blood_type, phone, city, latitude, longitude, available, created_at`,
+            [name, blood_type, phone, city, id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Donor not found' });
+        }
+
+        const donor = result.rows[0];
+
+        await redis.set(`donor:${id}`, JSON.stringify(donor), 'EX', 3600);
+        await redis.del('donors:list');
+
+        res.json({ message: 'Profile updated', donor });
+    } catch (error) {
+        next(error);
+    }
+};
+
+module.exports = { listDonors, getDonor, createDonor, updateAvailability, updateDonor };

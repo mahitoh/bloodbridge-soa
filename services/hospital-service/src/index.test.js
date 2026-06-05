@@ -1,5 +1,9 @@
 const request = require('supertest');
+const jwt = require('jsonwebtoken');
 const app = require('./app');
+
+const TEST_TOKEN = jwt.sign({ id: 'test-hospital', email: 'hospital@test.com', role: 'hospital' }, 'dev-secret');
+const AUTH_HEADER = { Authorization: `Bearer ${TEST_TOKEN}` };
 
 // Mock ONLY the database pool. The models will use this mock, ensuring their code is executed and covered.
 jest.mock('./config/db', () => {
@@ -118,6 +122,7 @@ describe('Hospital Service', () => {
     test('POST /hospitals should create hospital', async () => {
         const response = await request(app)
             .post('/hospitals')
+            .set(AUTH_HEADER)
             .send({ name: 'City Hospital', email: 'city@example.com', phone: '+254700000004', city: 'Nakuru', address: 'Main Street' });
 
         expect(response.statusCode).toBe(201);
@@ -138,12 +143,16 @@ describe('Hospital Service', () => {
     test('PUT /hospitals/:id should update hospital and handle failures', async () => {
         const updateResponse = await request(app)
             .put('/hospitals/test-hospital-id')
+            .set(AUTH_HEADER)
             .send({ name: 'County Referral Hospital', email: 'county@example.com', phone: '+254700000005', city: 'Kisumu', address: 'Lake Road' });
 
         expect(updateResponse.statusCode).toBe(200);
         expect(updateResponse.body.hospital.name).toBe('County Referral Hospital');
 
-        const invalidResponse = await request(app).post('/hospitals').send({ name: 'Bad' });
+        const invalidResponse = await request(app)
+            .post('/hospitals')
+            .set(AUTH_HEADER)
+            .send({ name: 'Bad' });
         expect(invalidResponse.statusCode).toBe(400);
 
         const missingResponse = await request(app).get('/hospitals/missing');

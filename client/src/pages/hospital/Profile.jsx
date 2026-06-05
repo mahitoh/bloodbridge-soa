@@ -15,6 +15,7 @@ import {
   TrendingUp
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
+import { hospitalAPI } from '../../api/axios'
 
 const HospitalProfile = () => {
   const { user } = useAuth()
@@ -28,9 +29,19 @@ const HospitalProfile = () => {
     city: 'San Francisco, CA',
   })
 
-  const handleSave = () => {
-    // API call would go here
-    setIsEditing(false)
+  const handleSave = async () => {
+    try {
+      await hospitalAPI.put(`/hospitals/${user?.id}`, {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        city: formData.city.split(',')[0].trim(),
+        address: formData.address
+      })
+      setIsEditing(false)
+    } catch (error) {
+      console.error('Failed to update profile:', error)
+    }
   }
 
   return (

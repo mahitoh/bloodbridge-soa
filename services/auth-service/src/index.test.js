@@ -9,6 +9,19 @@ jest.mock('./config/db', () => {
             }
             return Promise.resolve({ rows: [] });
         }
+        if (query.includes('SELECT id, name, email, role, bloodtype, phone, city FROM users WHERE id')) {
+            return Promise.resolve({
+                rows: [{
+                    id: params[0],
+                    name: 'Test User',
+                    email: 'test@example.com',
+                    role: 'DONOR',
+                    bloodtype: 'O+',
+                    phone: '1234567890',
+                    city: 'Test City'
+                }]
+            });
+        }
         if (query.includes('INSERT INTO users')) {
             return Promise.resolve({
                 rows: [{

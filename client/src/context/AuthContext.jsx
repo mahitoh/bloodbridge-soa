@@ -18,13 +18,19 @@ export const AuthProvider = ({ children }) => {
 
   const verifyToken = async (token) => {
     if (token === 'demo-token') {
-      setUser({ id: 'demo', name: 'Demo User', email: 'demo@bloodbridge.com', role: 'donor', bloodType: 'O+' })
+      setUser({ id: 'demo', name: 'Demo User', email: 'demo@bloodbridge.com', role: 'donor', bloodType: 'O+', phone: '', city: '' })
       setLoading(false)
       return
     }
     try {
       const response = await authAPI.post('/auth/verify', { token })
-      setUser(response.data.user)
+      const verifiedUser = response.data.user
+      setUser({
+        ...verifiedUser,
+        bloodType: verifiedUser.bloodType || 'O+',
+        phone: verifiedUser.phone || '',
+        city: verifiedUser.city || '',
+      })
     } catch (error) {
       localStorage.removeItem('token')
       setUser(null)

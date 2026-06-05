@@ -17,6 +17,7 @@ async function initDB() {
                 radius INTEGER DEFAULT 20,
                 notes TEXT,
                 status VARCHAR(20) DEFAULT 'Active',
+                accepted_by_donor_id UUID,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
