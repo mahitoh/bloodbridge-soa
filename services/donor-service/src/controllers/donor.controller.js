@@ -156,7 +156,7 @@ const getDonorByEmail = async (req, res, next) => {
         if (!email) return res.status(401).json({ error: 'Unauthorized' });
 
         const result = await pool.query(
-            'SELECT id, name, blood_type, phone, city, latitude, longitude, available, created_at FROM donors WHERE email = $1',
+            'SELECT id, name, blood_type, phone, city, latitude, longitude, available, email, created_at FROM donors WHERE email = $1',
             [email]
         );
 
