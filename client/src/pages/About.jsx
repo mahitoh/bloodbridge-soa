@@ -1,10 +1,81 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import Button from '../components/ui/Button'
-import { Heart, Shield, MapPin } from 'lucide-react'
+import { Heart, Shield, MapPin, Menu, X } from 'lucide-react'
 
 const About = () => {
+  const [mobileOpen, setMobileOpen] = useState(false)
+
+  const teamMembers = [
+    {
+      name: 'ANKAIMBOM RICHCAL CHIA',
+      role: 'Scrum Master',
+      initials: 'ARC',
+      color: 'bg-gradient-to-br from-blue-400 to-blue-600'
+    },
+    {
+      name: 'KUWAN RANDY LANJO',
+      role: 'Product Owner',
+      initials: 'KRL',
+      color: 'bg-gradient-to-br from-purple-400 to-purple-600'
+    }
+  ]
+
   return (
     <div className="min-h-screen bg-white text-gray-900 font-sans">
+      {/* Navbar */}
+      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 supports-[backdrop-filter]:bg-white/70">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-4 max-w-7xl mx-auto">
+          <Link
+            to="/"
+            className="flex items-center gap-2 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-red focus-visible:ring-offset-2"
+            onClick={() => setMobileOpen(false)}
+          >
+            <div className="w-10 h-10 flex items-center justify-center">
+              <img src="/favicon.svg" alt="BloodBridge Logo" className="w-full h-full object-contain drop-shadow-md" />
+            </div>
+            <span className="text-2xl font-bold text-gray-900 tracking-tight">BloodBridge</span>
+          </Link>
+          <div className="hidden md:flex items-center gap-8 font-medium text-gray-600">
+            <Link to="/" className="rounded-md px-1 py-0.5 -mx-1 hover:text-primary-red transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-red focus-visible:ring-offset-2">Home</Link>
+            <a href="#team" className="rounded-md px-1 py-0.5 -mx-1 hover:text-primary-red transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-red focus-visible:ring-offset-2">Team</a>
+            <Link to="/login" className="rounded-md px-1 py-0.5 -mx-1 hover:text-primary-red transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-red focus-visible:ring-offset-2">Login</Link>
+            <Link to="/register" className="rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-red focus-visible:ring-offset-2">
+              <Button className="shadow-md shadow-red-100">Get Started</Button>
+            </Link>
+          </div>
+          <button
+            type="button"
+            className="md:hidden rounded-xl p-2 text-gray-700 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-red focus-visible:ring-offset-2"
+            aria-expanded={mobileOpen}
+            aria-controls="about-mobile-nav"
+            aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+            onClick={() => setMobileOpen((o) => !o)}
+          >
+            {mobileOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
+        {mobileOpen && (
+          <div
+            id="about-mobile-nav"
+            className="md:hidden border-t border-gray-100 bg-white px-6 py-4 space-y-3 font-medium text-gray-700"
+          >
+            <Link to="/" className="block rounded-lg py-2 hover:text-primary-red focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-red focus-visible:ring-inset" onClick={() => setMobileOpen(false)}>
+              Home
+            </Link>
+            <a href="#team" className="block rounded-lg py-2 hover:text-primary-red focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-red focus-visible:ring-inset" onClick={() => setMobileOpen(false)}>
+              Team
+            </a>
+            <Link to="/login" className="block rounded-lg py-2 hover:text-primary-red focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-red focus-visible:ring-inset" onClick={() => setMobileOpen(false)}>
+              Login
+            </Link>
+            <Link to="/register" className="block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-red focus-visible:ring-inset" onClick={() => setMobileOpen(false)}>
+              <Button className="w-full shadow-md shadow-red-100">Get Started</Button>
+            </Link>
+          </div>
+        )}
+      </nav>
+
       <section className="bg-gradient-to-r from-primary-light via-white to-red-50 py-20">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -124,8 +195,34 @@ const About = () => {
           </div>
         </div>
       </section>
+
+      <section id="team" className="py-20">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <p className="text-sm uppercase tracking-[0.24em] font-bold text-primary-red">Meet our team</p>
+            <h2 className="text-3xl sm:text-4xl font-black text-gray-900 mt-4">The people behind BloodBridge</h2>
+            <p className="mt-4 text-gray-600 leading-relaxed">
+              Our dedicated team is committed to connecting donors with those who need them most.
+            </p>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-2 gap-12 max-w-3xl mx-auto">
+            {teamMembers.map((member, idx) => (
+              <div key={idx} className="rounded-3xl border border-gray-100 bg-white shadow-lg hover:shadow-xl transition-shadow p-8 text-center space-y-6">
+                <div className={`w-24 h-24 mx-auto rounded-full ${member.color} flex items-center justify-center shadow-lg`}>
+                  <span className="text-4xl font-black text-white">{member.initials}</span>
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-xl font-bold text-gray-900">{member.name}</h3>
+                  <p className="text-primary-red font-semibold">{member.role}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
     </div>
   )
 }
 
 export default About
+
