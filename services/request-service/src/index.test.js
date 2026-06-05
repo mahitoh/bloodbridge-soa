@@ -154,4 +154,14 @@ describe('Request Service', () => {
         const response = await request(app).get('/requests');
         expect(response.statusCode).toBe(500);
     });
+
+    test('updateRequestMetrics should update request gauges', () => {
+    const metrics = require('./metrics');
+
+    expect(() => metrics.updateRequestMetrics([
+        { status: 'Active', blood_type: 'O+' },
+        { status: 'Fulfilled', blood_type: 'A+' },
+        { status: 'Active', blood_type: 'O+' }
+    ])).not.toThrow();
+});
 });

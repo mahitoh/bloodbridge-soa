@@ -46,11 +46,13 @@ const requestsByBloodType = new client.Gauge({
 
 const updateRequestMetrics = (bloodRequests) => {
   totalRequests.set(bloodRequests.length);
-  activeRequests.set(bloodRequests.filter(r => r.status === 'OPEN').length);
-  const bloodTypeCounts = bloodRequests.reduce((acc, r) => {
-    acc[r.bloodType] = (acc[r.bloodType] || 0) + 1;
+  activeRequests.set(bloodRequests.filter((request) => request.status === 'Active').length);
+
+  const bloodTypeCounts = bloodRequests.reduce((acc, request) => {
+    acc[request.blood_type] = (acc[request.blood_type] || 0) + 1;
     return acc;
   }, {});
+
   Object.entries(bloodTypeCounts).forEach(([bloodType, count]) => {
     requestsByBloodType.set({ blood_type: bloodType }, count);
   });
