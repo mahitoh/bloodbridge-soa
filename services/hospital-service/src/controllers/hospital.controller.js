@@ -73,4 +73,24 @@ const updateHospital = async (req, res, next) => {
     }
 };
 
-module.exports = { listHospitals, getHospital, createHospital, updateHospital };
+const getMyHospital = async (req, res, next) => {
+    try {
+        const email = req.user?.email;
+        if (!email) return res.status(401).json({ error: 'Unauthorized' });
+
+        const result = await pool.query(
+            'SELECT id, name, email, phone, city, address, latitude, longitude, created_at FROM hospitals WHERE email = $1',
+            [email]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Hospital profile not found' });
+        }
+
+        res.json({ hospital: result.rows[0] });
+    } catch (error) {
+        next(error);
+    }
+};
+
+module.exports = { listHospitals, getHospital, createHospital, updateHospital, getMyHospital };
