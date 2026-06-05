@@ -64,7 +64,6 @@ const DonorProfile = () => {
       console.error('Failed to update profile:', error)
     }
   }
-  }
 
   return (
     <DashboardLayout>
