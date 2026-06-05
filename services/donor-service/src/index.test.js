@@ -207,4 +207,12 @@ describe('Donor Service', () => {
         expect(response.statusCode).toBe(200);
         expect(response.body.donor).toBeDefined();
     });
+
+    test('GET /donors/me should return 404 for missing donor profile', async () => {
+        const response = await request(app)
+            .get('/donors/me')
+            .set(AUTH_HEADER);
+
+        expect(response.statusCode).toBe(404);
+    });
 });
