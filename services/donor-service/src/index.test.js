@@ -31,6 +31,7 @@ jest.mock('./config/db', () => {
                         blood_type: 'O+',
                         phone: '123',
                         city: 'Test City',
+                        email: 'test@test.com',
                         latitude: 0,
                         longitude: 0,
                         available: true,
