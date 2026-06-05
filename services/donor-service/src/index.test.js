@@ -206,6 +206,6 @@ describe('Donor Service', () => {
 
         expect(response.statusCode).toBe(200);
         expect(response.body.donor).toBeDefined();
-        expect(response.body.donor.email).toBe('test@test.com');
+        expect(response.body.donor.id).toBe('test-donor-id');
     });
 });
