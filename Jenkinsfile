@@ -106,13 +106,13 @@ pipeline {
         stage('Build Docker Images') {
             steps {
                 echo 'Building Docker images...'
-                sh 'docker build -t bloodbridge-auth:latest services/auth-service'
-                sh 'docker build -t bloodbridge-donor:latest services/donor-service'
-                sh 'docker build -t bloodbridge-hospital:latest services/hospital-service'
-                sh 'docker build -t bloodbridge-request:latest services/request-service'
-                sh 'docker build -t bloodbridge-location:latest services/location-service'
-                sh 'docker build -t bloodbridge-notification:latest services/notification-service'
-                sh 'docker build -t bloodbridge-client:latest client'
+                sh 'docker build --no-cache -t bloodbridge-auth:latest services/auth-service'
+                sh 'docker build --no-cache -t bloodbridge-donor:latest services/donor-service'
+                sh 'docker build --no-cache -t bloodbridge-hospital:latest services/hospital-service'
+                sh 'docker build --no-cache -t bloodbridge-request:latest services/request-service'
+                sh 'docker build --no-cache -t bloodbridge-location:latest services/location-service'
+                sh 'docker build --no-cache -t bloodbridge-notification:latest services/notification-service'
+                sh 'docker build --no-cache -t bloodbridge-client:latest client'
             }
         }
 
