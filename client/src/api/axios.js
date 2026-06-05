@@ -47,7 +47,7 @@ const addAuthAndErrorHandling = (instance) => {
                 }
                 localStorage.removeItem('token')
                 localStorage.removeItem('refreshToken')
-                window.location.href = '/login'
+                window.dispatchEvent(new Event('auth:logout'))
             }
             return Promise.reject(error)
         }
