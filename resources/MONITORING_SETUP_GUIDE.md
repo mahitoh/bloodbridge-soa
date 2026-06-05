@@ -2,40 +2,7 @@
 > BloodBridge SOA — SEN3244 Software Architecture
 > Simple explanation of what everything does and how we set it up
 
----
-
-## 🗺️ The Big Picture
-
-```
-Your microservices run as pods
-          ↓
-Prometheus scrapes metrics every 15 seconds
-          ↓
-Grafana reads from Prometheus and draws graphs
-          ↓
-You open browser and see live dashboards
-```
-
----
-
-## ⛵ What is Helm?
-
-Helm is a **package manager for Kubernetes** — like npm but for Kubernetes apps.
-
-**Without Helm** — you'd manually write 5-6 complex YAML files to install Grafana.
-
-**With Helm** — one command does everything:
-```bash
-helm install grafana grafana/grafana
-```
-
-### How We Installed Helm
-```bash
-# SSH into VPS
-ssh root@64.225.100.80
-
-# Download and install Helm
-curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+---ash
 
 # Verify installation
 helm version
