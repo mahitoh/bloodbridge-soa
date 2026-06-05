@@ -153,15 +153,22 @@ const getDonorHistory = async (req, res, next) => {
 const getDonorByEmail = async (req, res, next) => {
     try {
         const email = req.user?.email;
+        const name = req.user?.name;
         if (!email) return res.status(401).json({ error: 'Unauthorized' });
 
         const result = await pool.query(
-            'SELECT id, name, blood_type, phone, city, latitude, longitude, available, email, created_at FROM donors WHERE email = $1',
+            'SELECT id, name, blood_type, phone, city, latitude, longitude, available, created_at FROM donors WHERE email = $1',
             [email]
         );
 
         if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Donor profile not found' });
+            const newDonor = await pool.query(
+                `INSERT INTO donors (name, blood_type, phone, city, latitude, longitude, available, email) 
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
+                 RETURNING id, name, blood_type, phone, city, latitude, longitude, available, created_at`,
+                [name || 'New Donor', 'O+', null, null, null, null, true, email]
+            );
+            return res.json({ donor: newDonor.rows[0] });
         }
 
         res.json({ donor: result.rows[0] });
