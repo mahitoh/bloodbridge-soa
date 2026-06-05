@@ -21,6 +21,7 @@ import AdminHospitals from './pages/admin/Hospitals'
 import AdminAnalytics from './pages/admin/Analytics'
 import AdminRequests from './pages/admin/Requests'
 import AdminSettings from './pages/admin/Settings'
+import About from './pages/About'
 import { useAuth } from './context/AuthContext'
 
 const ProtectedRoute = ({ children, role }) => {
@@ -40,6 +41,7 @@ function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/about" element={<About />} />
         
         {/* Donor Routes */}
         <Route 
