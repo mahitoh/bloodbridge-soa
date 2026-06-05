@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import Button from '../../components/ui/Button'
 import { 
@@ -20,18 +20,47 @@ import { hospitalAPI } from '../../api/axios'
 const HospitalProfile = () => {
   const { user } = useAuth()
   const [isEditing, setIsEditing] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
   const [formData, setFormData] = useState({
-    name: user?.name || 'General Hospital',
-    email: user?.email || 'contact@generalhospital.demo',
+    id: '',
+    name: 'General Hospital',
+    email: 'contact@generalhospital.demo',
     phone: '+1 (555) 987-6543',
     registrationNumber: 'REG-882910-MH',
     address: '123 Medical Center Drive',
     city: 'San Francisco, CA',
   })
 
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const res = await hospitalAPI.get('/hospitals/me')
+        const h = res.data.hospital
+        setFormData({
+          id: h.id,
+          name: h.name,
+          email: h.email,
+          phone: h.phone || '',
+          registrationNumber: 'REG-' + h.id.slice(0, 6).toUpperCase(),
+          address: h.address || '',
+          city: h.city || '',
+        })
+      } catch (err) {
+        setError('Failed to load hospital profile')
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadProfile()
+  }, [user])
+
   const handleSave = async () => {
+    setSaving(true)
+    setError('')
     try {
-      await hospitalAPI.put(`/hospitals/${user?.id}`, {
+      await hospitalAPI.put(`/hospitals/${formData.id}`, {
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
@@ -39,9 +68,31 @@ const HospitalProfile = () => {
         address: formData.address
       })
       setIsEditing(false)
-    } catch (error) {
-      console.error('Failed to update profile:', error)
+    } catch (err) {
+      setError('Failed to update profile')
+    } finally {
+      setSaving(false)
     }
+  }
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="max-w-5xl mx-auto py-20 text-center">
+        <p className="text-gray-400 animate-pulse">Loading profile...</p>
+      </div>
+    </DashboardLayout>
+    )
+  }
+
+  if (error) {
+    return (
+      <DashboardLayout>
+        <div className="max-w-5xl mx-auto py-20 text-center">
+        <p className="text-red-500">{error}</p>
+      </div>
+    </DashboardLayout>
+    )
   }
 
   return (

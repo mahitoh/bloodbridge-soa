@@ -149,7 +149,7 @@ const Step2 = ({ data, update, onNext, onBack }) => {
   )
 }
 
-const Step3 = ({ data, onBack, onSubmit }) => {
+const Step3 = ({ data, onBack, onSubmit, loading }) => {
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
       <div>
@@ -198,7 +198,7 @@ const Step3 = ({ data, onBack, onSubmit }) => {
       <div className="flex justify-between">
         <Button onClick={onBack} className="btn-secondary px-8">Back</Button>
             <Button 
-              onClick={handleSubmit} 
+              onClick={onSubmit} 
               disabled={loading}
               className="btn-primary px-10 gap-2 h-12 bg-red-600 hover:bg-red-700 disabled:opacity-50"
             >
