@@ -18,13 +18,19 @@ export const AuthProvider = ({ children }) => {
 
   const verifyToken = async (token) => {
     if (token === 'demo-token') {
-      setUser({ id: 'demo', name: 'Demo User', email: 'demo@bloodbridge.com', role: 'donor', bloodType: 'O+' })
+      setUser({ id: 'demo', name: 'Demo User', email: 'demo@bloodbridge.com', role: 'donor', bloodType: 'O+', phone: '', city: '' })
       setLoading(false)
       return
     }
     try {
       const response = await authAPI.post('/auth/verify', { token })
-      setUser(response.data.user)
+      const verifiedUser = response.data.user
+      setUser({
+        ...verifiedUser,
+        bloodType: verifiedUser.bloodType || 'O+',
+        phone: verifiedUser.phone || '',
+        city: verifiedUser.city || '',
+      })
     } catch (error) {
       localStorage.removeItem('token')
       setUser(null)
@@ -36,8 +42,9 @@ export const AuthProvider = ({ children }) => {
   const login = async (credentials) => {
     try {
       const response = await authAPI.post('/auth/login', credentials)
-      const { token, user } = response.data
+      const { token, refreshToken, user } = response.data
       localStorage.setItem('token', token)
+      if (refreshToken) localStorage.setItem('refreshToken', refreshToken)
       setUser(user)
       return { success: true, user }
     } catch (error) {
@@ -50,6 +57,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem('token')
+    localStorage.removeItem('refreshToken')
     setUser(null)
   }
 

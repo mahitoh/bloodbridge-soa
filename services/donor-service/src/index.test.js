@@ -1,10 +1,27 @@
 const request = require('supertest');
+const jwt = require('jsonwebtoken');
 const app = require('./app');
+
+const TEST_TOKEN = jwt.sign({ id: 'test-user', email: 'test@test.com', role: 'donor' }, 'dev-secret');
+const AUTH_HEADER = { Authorization: `Bearer ${TEST_TOKEN}` };
 
 // Mock the database pool
 jest.mock('./config/db', () => {
     const mockQuery = jest.fn();
     mockQuery.mockImplementation((query, params = []) => {
+        if (query.includes('SELECT id, name, email, role, bloodtype, phone, city FROM users')) {
+            return Promise.resolve({
+                rows: [{
+                    id: params[0],
+                    name: 'Test User',
+                    email: 'test@test.com',
+                    role: 'donor',
+                    bloodtype: 'O+',
+                    phone: '123',
+                    city: 'Test City'
+                }]
+            });
+        }
         if (query.includes('SELECT id, name, blood_type')) {
             if (query.includes('WHERE id = $1') && params[0] === 'missing') {
                 return Promise.resolve({ rows: [] });
@@ -99,6 +116,7 @@ describe('Donor Service', () => {
     test('POST /donors should create donor', async () => {
         const createResponse = await request(app)
             .post('/donors')
+            .set(AUTH_HEADER)
             .send({ name: 'Brian Otieno', blood_type: 'A-', phone: '+254700000002', city: 'Mombasa' });
 
         expect(createResponse.statusCode).toBe(201);
@@ -109,6 +127,7 @@ describe('Donor Service', () => {
     test('PUT /donors/:id/availability should update availability', async () => {
         const availabilityResponse = await request(app)
             .put('/donors/test-donor-id/availability')
+            .set(AUTH_HEADER)
             .send({ available: false });
 
         expect(availabilityResponse.statusCode).toBe(200);
@@ -128,7 +147,10 @@ describe('Donor Service', () => {
     });
 
     test('donor endpoints should handle validation and not found cases', async () => {
-        const invalidResponse = await request(app).post('/donors').send({ name: 'A' });
+        const invalidResponse = await request(app)
+            .post('/donors')
+            .set(AUTH_HEADER)
+            .send({ name: 'A' });
         expect(invalidResponse.statusCode).toBe(400);
 
         const missingResponse = await request(app).get('/donors/missing');
@@ -136,6 +158,7 @@ describe('Donor Service', () => {
 
         const missingAvailabilityResponse = await request(app)
             .put('/donors/missing/availability')
+            .set(AUTH_HEADER)
             .send({ available: true });
         expect(missingAvailabilityResponse.statusCode).toBe(404);
     });

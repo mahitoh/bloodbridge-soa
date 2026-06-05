@@ -1,10 +1,28 @@
 const request = require('supertest');
+const jwt = require('jsonwebtoken');
 const app = require('./app');
+
+const TEST_TOKEN = jwt.sign({ id: 'test-hospital', email: 'hospital@test.com', role: 'hospital' }, 'dev-secret');
+const AUTH_HEADER = { Authorization: `Bearer ${TEST_TOKEN}` };
 
 // Mock ONLY the database pool. The models will use this mock, ensuring their code is executed and covered.
 jest.mock('./config/db', () => {
     const mockQuery = jest.fn();
     mockQuery.mockImplementation((query, params = []) => {
+        if (query.includes('SELECT id, name, email, role FROM users WHERE id = $1')) {
+            if (params[0] === 'test-hospital') {
+                return Promise.resolve({
+                    rows: [{
+                        id: 'test-hospital',
+                        name: 'Test Hospital',
+                        email: 'hospital@test.com',
+                        role: 'hospital'
+                    }]
+                });
+            }
+            return Promise.resolve({ rows: [] });
+        }
+
         // hospital.model.js & hospital.controller.js queries
         if (query.includes('SELECT id, name, email, phone, city, address, latitude, longitude, created_at FROM hospitals WHERE id = $1')) {
             if (params[0] === '00000000-0000-0000-0000-000000000000' || params[0] === 'missing') {
@@ -118,6 +136,7 @@ describe('Hospital Service', () => {
     test('POST /hospitals should create hospital', async () => {
         const response = await request(app)
             .post('/hospitals')
+            .set(AUTH_HEADER)
             .send({ name: 'City Hospital', email: 'city@example.com', phone: '+254700000004', city: 'Nakuru', address: 'Main Street' });
 
         expect(response.statusCode).toBe(201);
@@ -138,12 +157,16 @@ describe('Hospital Service', () => {
     test('PUT /hospitals/:id should update hospital and handle failures', async () => {
         const updateResponse = await request(app)
             .put('/hospitals/test-hospital-id')
+            .set(AUTH_HEADER)
             .send({ name: 'County Referral Hospital', email: 'county@example.com', phone: '+254700000005', city: 'Kisumu', address: 'Lake Road' });
 
         expect(updateResponse.statusCode).toBe(200);
         expect(updateResponse.body.hospital.name).toBe('County Referral Hospital');
 
-        const invalidResponse = await request(app).post('/hospitals').send({ name: 'Bad' });
+        const invalidResponse = await request(app)
+            .post('/hospitals')
+            .set(AUTH_HEADER)
+            .send({ name: 'Bad' });
         expect(invalidResponse.statusCode).toBe(400);
 
         const missingResponse = await request(app).get('/hospitals/missing');

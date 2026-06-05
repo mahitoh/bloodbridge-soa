@@ -85,7 +85,11 @@ jest.mock('./config/rabbitmq', () => {
 });
 
 const request = require('supertest');
+const jwt = require('jsonwebtoken');
 const app = require('./app');
+
+const TEST_TOKEN = jwt.sign({ id: 'test-donor', email: 'donor@test.com', role: 'donor' }, 'dev-secret');
+const AUTH_HEADER = { Authorization: `Bearer ${TEST_TOKEN}` };
 
 describe('Request Service', () => {
     test('GET /health should return 200 and status healthy', async () => {
@@ -97,6 +101,7 @@ describe('Request Service', () => {
     test('POST /requests should create request', async () => {
         const createResponse = await request(app)
             .post('/requests')
+            .set(AUTH_HEADER)
             .send({ hospital_id: 'hospital_1', blood_type: 'B+', units: 3, urgency: 'Critical', radius: 20 });
 
         expect(createResponse.statusCode).toBe(201);
@@ -107,6 +112,7 @@ describe('Request Service', () => {
     test('PUT /requests/:id/status should update status', async () => {
         const statusResponse = await request(app)
             .put('/requests/test-request-id/status')
+            .set(AUTH_HEADER)
             .send({ status: 'Fulfilled' });
 
         expect(statusResponse.statusCode).toBe(200);
@@ -126,7 +132,10 @@ describe('Request Service', () => {
     });
 
     test('request endpoints should handle validation and not found cases', async () => {
-        const invalidResponse = await request(app).post('/requests').send({ hospital_id: 'hospital_1' });
+        const invalidResponse = await request(app)
+            .post('/requests')
+            .set(AUTH_HEADER)
+            .send({ hospital_id: 'hospital_1' });
         expect(invalidResponse.statusCode).toBe(400);
 
         const missingResponse = await request(app).get('/requests/missing');
@@ -134,6 +143,7 @@ describe('Request Service', () => {
 
         const missingStatusResponse = await request(app)
             .put('/requests/missing/status')
+            .set(AUTH_HEADER)
             .send({ status: 'Cancelled' });
         expect(missingStatusResponse.statusCode).toBe(404);
     });

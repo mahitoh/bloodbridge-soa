@@ -3,8 +3,8 @@ const { getChannel } = require('../config/rabbitmq');
 
 const listRequests = async (req, res, next) => {
     try {
-        const { status, blood_type } = req.query;
-        let query = 'SELECT id, hospital_id, blood_type, units, urgency, radius, notes, status, created_at FROM requests WHERE 1=1';
+        const { status, blood_type, hospital_id, accepted_by_donor_id } = req.query;
+        let query = 'SELECT id, hospital_id, blood_type, units, urgency, radius, notes, status, accepted_by_donor_id, created_at FROM requests WHERE 1=1';
         const params = [];
         let paramCount = 1;
 
@@ -16,6 +16,16 @@ const listRequests = async (req, res, next) => {
         if (blood_type) {
             query += ` AND blood_type = $${paramCount}`;
             params.push(blood_type);
+            paramCount++;
+        }
+        if (hospital_id) {
+            query += ` AND hospital_id = $${paramCount}`;
+            params.push(hospital_id);
+            paramCount++;
+        }
+        if (accepted_by_donor_id) {
+            query += ` AND accepted_by_donor_id = $${paramCount}`;
+            params.push(accepted_by_donor_id);
             paramCount++;
         }
 
@@ -89,7 +99,7 @@ const updateStatus = async (req, res, next) => {
         const { status } = req.body;
 
         const result = await pool.query(
-            'UPDATE requests SET status = $1 WHERE id = $2 RETURNING id, hospital_id, blood_type, units, urgency, radius, notes, status, created_at',
+            'UPDATE requests SET status = $1 WHERE id = $2 RETURNING id, hospital_id, blood_type, units, urgency, radius, notes, status, accepted_by_donor_id, created_at',
             [status, id]
         );
 
@@ -103,4 +113,24 @@ const updateStatus = async (req, res, next) => {
     }
 };
 
-module.exports = { listRequests, getRequest, createRequest, updateStatus };
+const acceptRequest = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const donorId = req.user.id;
+
+        const result = await pool.query(
+            'UPDATE requests SET status = $1, accepted_by_donor_id = $2 WHERE id = $3 RETURNING id, hospital_id, blood_type, units, urgency, radius, notes, status, accepted_by_donor_id, created_at',
+            ['Fulfilled', donorId, id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Blood request not found' });
+        }
+
+        res.json({ message: 'Request accepted and marked as Fulfilled', request: result.rows[0] });
+    } catch (error) {
+        next(error);
+    }
+};
+
+module.exports = { listRequests, getRequest, createRequest, updateStatus, acceptRequest };

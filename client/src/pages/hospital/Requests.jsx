@@ -90,7 +90,13 @@ const HospitalRequests = () => {
   useEffect(() => {
     const fetchRequests = async () => {
       try {
-        const response = await requestAPI.get('/requests')
+        const meRes = await hospitalAPI.get('/hospitals/me')
+        const hospitalId = meRes.data.hospital?.id
+        if (!hospitalId) {
+          setLoading(false)
+          return
+        }
+        const response = await requestAPI.get('/requests', { params: { hospital_id: hospitalId } })
         setRequests(response.data.requests || [])
       } catch (err) {
         console.error('Failed to fetch requests:', err)
@@ -102,7 +108,7 @@ const HospitalRequests = () => {
   }, [])
 
   const tabs = ['All', 'Active', 'Pending', 'Fulfilled', 'Cancelled']
-  
+
   const filteredRequests = activeTab === 'All' ? requests : requests.filter(r => r.status === activeTab)
 
   return (

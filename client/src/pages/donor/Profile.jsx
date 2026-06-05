@@ -31,8 +31,11 @@ const DonorProfile = () => {
 
   const handleSave = async () => {
     try {
-      // API call to update donor profile
-      // await donorAPI.put(`/donors/${user?.id}`, formData)
+      await donorAPI.put(`/donors/${user?.id}`, {
+        name: formData.name,
+        phone: formData.phone,
+        city: formData.city.split(',')[0].trim()
+      })
       setIsEditing(false)
     } catch (error) {
       console.error('Failed to update profile:', error)
