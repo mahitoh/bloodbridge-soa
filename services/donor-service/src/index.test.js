@@ -23,6 +23,21 @@ jest.mock('./config/db', () => {
             });
         }
         if (query.includes('SELECT id, name, blood_type')) {
+            if (query.includes('WHERE email = $1')) {
+                return Promise.resolve({
+                    rows: [{
+                        id: 'test-donor-id',
+                        name: 'Test Donor',
+                        blood_type: 'O+',
+                        phone: '123',
+                        city: 'Test City',
+                        latitude: 0,
+                        longitude: 0,
+                        available: true,
+                        created_at: new Date().toISOString()
+                    }]
+                });
+            }
             if (query.includes('WHERE id = $1') && params[0] === 'missing') {
                 return Promise.resolve({ rows: [] });
             }
@@ -181,5 +196,16 @@ describe('Donor Service', () => {
         { available: false, blood_type: 'A+' },
         { available: true, blood_type: 'O+' }
     ])).not.toThrow();
+});
+
+    test('GET /donors/me should return current donor profile', async () => {
+        const response = await request(app)
+            .get('/donors/me')
+            .set(AUTH_HEADER);
+
+        expect(response.statusCode).toBe(200);
+        expect(response.body.donor).toBeDefined();
+        expect(response.body.donor.email).toBe('test@test.com');
+    });
 });
 });
