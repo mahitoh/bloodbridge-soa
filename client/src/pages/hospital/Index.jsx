@@ -119,7 +119,7 @@ const HospitalDashboard = () => {
         </div>
         <div className="flex flex-wrap gap-3">
           <Link to="/hospital/inventory" className="btn btn-secondary gap-2 h-12 px-8">
-            <Drop size={20} />
+            <Droplets size={20} />
             Manage Inventory
           </Link>
           <Link to="/hospital/requests/new" className="btn btn-primary gap-2 h-12 px-8 shadow-xl shadow-red-500/20">
