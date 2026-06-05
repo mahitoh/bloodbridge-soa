@@ -72,10 +72,17 @@ const login = async (req, res, next) => {
     }
 };
 
-const verify = (req, res) => {
+const verify = async (req, res) => {
     try {
         const decoded = jwt.verify(req.body.token, process.env.JWT_SECRET || 'dev-secret');
-        res.json({ valid: true, user: decoded });
+        const result = await pool.query(
+            'SELECT id, name, email, role, bloodtype, phone, city FROM users WHERE id = $1',
+            [decoded.id]
+        );
+        if (result.rows.length === 0) {
+            return res.status(404).json({ valid: false, error: 'User not found' });
+        }
+        res.json({ valid: true, user: sanitizeUser(result.rows[0]) });
     } catch (error) {
         res.status(401).json({ valid: false, error: 'Invalid token' });
     }
