@@ -132,6 +132,14 @@ function App() {
             </ProtectedRoute>
           } 
         />
+        <Route 
+          path="/hospital/inventory" 
+          element={
+            <ProtectedRoute role="hospital">
+              <HospitalInventory />
+            </ProtectedRoute>
+          } 
+        />
         
         {/* Admin Routes */}
         <Route 
