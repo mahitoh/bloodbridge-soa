@@ -40,6 +40,7 @@ const Landing = () => {
             <a href="#how-it-works" className="rounded-md px-1 py-0.5 -mx-1 hover:text-primary-red transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-red focus-visible:ring-offset-2">How it Works</a>
             <a href="#features" className="rounded-md px-1 py-0.5 -mx-1 hover:text-primary-red transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-red focus-visible:ring-offset-2">Features</a>
             <a href="#impact" className="rounded-md px-1 py-0.5 -mx-1 hover:text-primary-red transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-red focus-visible:ring-offset-2">Impact</a>
+            <Link to="/about" className="rounded-md px-1 py-0.5 -mx-1 hover:text-primary-red transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-red focus-visible:ring-offset-2">About</Link>
             <Link to="/login" className="rounded-md px-1 py-0.5 -mx-1 hover:text-primary-red transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-red focus-visible:ring-offset-2">Login</Link>
             <Link to="/register" className="rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-red focus-visible:ring-offset-2">
               <Button className="shadow-md shadow-red-100">Get Started</Button>
@@ -72,6 +73,9 @@ const Landing = () => {
             </a>
             <Link to="/login" className="block rounded-lg py-2 hover:text-primary-red focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-red focus-visible:ring-inset" onClick={() => setMobileOpen(false)}>
               Login
+            </Link>
+            <Link to="/about" className="block rounded-lg py-2 hover:text-primary-red focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-red focus-visible:ring-inset" onClick={() => setMobileOpen(false)}>
+              About
             </Link>
             <Link to="/register" className="block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-red focus-visible:ring-inset" onClick={() => setMobileOpen(false)}>
               <Button className="w-full shadow-md shadow-red-100">Get Started</Button>
