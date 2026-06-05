@@ -13,7 +13,8 @@ import {
   ShieldCheck,
   AlertCircle,
   TrendingUp,
-  History
+  History,
+  Droplets
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
