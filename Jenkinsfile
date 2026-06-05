@@ -104,7 +104,6 @@ pipeline {
         }
 
         stage('Build Docker Images') {
-            when { branch 'main' }
             steps {
                 echo 'Building Docker images...'
                 sh 'docker build -t bloodbridge-auth:latest services/auth-service'
@@ -118,7 +117,6 @@ pipeline {
         }
 
         stage('Import Images into K3s') {
-            when { branch 'main' }
             steps {
                 echo 'Importing images into K3s...'
                 sh 'docker save bloodbridge-auth:latest | k3s ctr images import -'
@@ -132,7 +130,6 @@ pipeline {
         }
 
         stage('Deploy to Production') {
-            when { branch 'main' }
             steps {
                 echo 'Deploying to Kubernetes...'
                 sh 'kubectl apply -f k8s/'
@@ -154,7 +151,6 @@ pipeline {
         }
 
         stage('Regression Tests') {
-            when { branch 'main' }
             steps {
                 echo 'Running regression tests...'
                 sh '''
