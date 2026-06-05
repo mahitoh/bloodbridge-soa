@@ -32,7 +32,7 @@ const About = () => {
             onClick={() => setMobileOpen(false)}
           >
             <div className="w-10 h-10 flex items-center justify-center">
-              <img src="/favicon.svg" alt="BloodBridge Logo" className="w-full h-full object-contain drop-shadow-md" />
+              <img src="./favicon.svg" alt="BloodBridge Logo" className="w-full h-full object-contain drop-shadow-md" />
             </div>
             <span className="text-2xl font-bold text-gray-900 tracking-tight">BloodBridge</span>
           </Link>

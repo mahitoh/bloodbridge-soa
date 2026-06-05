@@ -32,7 +32,7 @@ const Landing = () => {
             onClick={() => setMobileOpen(false)}
           >
             <div className="w-10 h-10 flex items-center justify-center">
-              <img src="/favicon.svg" alt="BloodBridge Logo" className="w-full h-full object-contain drop-shadow-md" />
+              <img src="./favicon.svg" alt="BloodBridge Logo" className="w-full h-full object-contain drop-shadow-md" />
             </div>
             <span className="text-2xl font-bold text-gray-900 tracking-tight">BloodBridge</span>
           </Link>
@@ -134,7 +134,7 @@ const Landing = () => {
           <div className="absolute -top-12 -left-12 w-64 h-64 bg-primary-light rounded-full blur-3xl opacity-30 motion-safe:transition-opacity motion-safe:duration-500 motion-safe:group-hover:opacity-50 motion-reduce:group-hover:opacity-30" aria-hidden />
           <div className="absolute -bottom-12 -right-12 w-80 h-80 bg-red-100 rounded-full blur-3xl opacity-30 motion-safe:transition-opacity motion-safe:duration-500 motion-safe:group-hover:opacity-50 motion-reduce:group-hover:opacity-30" aria-hidden />
           <img 
-            src="/donation_hero_premium_1778503945880.png" 
+            src="./donation_hero_premium_1778503945880.png" 
             alt="Blood Donation Community" 
             width={1200}
             height={900}
@@ -242,7 +242,7 @@ const Landing = () => {
               <div className="space-y-4 pt-12">
                 <div className="h-64 bg-primary-red rounded-3xl overflow-hidden shadow-2xl relative group">
                   <div className="absolute inset-0 bg-black/25 motion-safe:transition-colors motion-safe:duration-300 motion-safe:group-hover:bg-black/10 motion-reduce:group-hover:bg-black/25" aria-hidden />
-                  <img src="/blood_bridge_impact_1778503567274.png" width={1000} height={667} loading="lazy" decoding="async" className="w-full h-full object-cover" alt="Medical Lab" />
+                  <img src="./blood_bridge_impact_1778503567274.png" width={1000} height={667} loading="lazy" decoding="async" className="w-full h-full object-cover" alt="Medical Lab" />
                 </div>
                 <div className="h-48 bg-gray-200 rounded-3xl overflow-hidden shadow-lg">
                   <img src="https://images.unsplash.com/photo-1536856782524-df4231df3f80?q=80&w=1000&auto=format&fit=crop" width={1000} height={667} loading="lazy" decoding="async" className="w-full h-full object-cover" alt="Hospital Hall" />
