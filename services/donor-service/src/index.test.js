@@ -189,14 +189,14 @@ describe('Donor Service', () => {
     });
 
     test('updateDonorMetrics should update donor gauges', () => {
-    const metrics = require('./metrics');
+        const metrics = require('./metrics');
 
-    expect(() => metrics.updateDonorMetrics([
-        { available: true, blood_type: 'O+' },
-        { available: false, blood_type: 'A+' },
-        { available: true, blood_type: 'O+' }
-    ])).not.toThrow();
-});
+        expect(() => metrics.updateDonorMetrics([
+            { available: true, blood_type: 'O+' },
+            { available: false, blood_type: 'A+' },
+            { available: true, blood_type: 'O+' }
+        ])).not.toThrow();
+    });
 
     test('GET /donors/me should return current donor profile', async () => {
         const response = await request(app)
@@ -207,5 +207,4 @@ describe('Donor Service', () => {
         expect(response.body.donor).toBeDefined();
         expect(response.body.donor.email).toBe('test@test.com');
     });
-});
 });
