@@ -15,8 +15,6 @@ import {
   Phone,
   Menu,
   X,
-  Building2,
-  Users
 } from 'lucide-react'
 
 
@@ -246,21 +244,13 @@ const Landing = () => {
                   <div className="absolute inset-0 bg-black/25 motion-safe:transition-colors motion-safe:duration-300 motion-safe:group-hover:bg-black/10 motion-reduce:group-hover:bg-black/25" aria-hidden />
                   <img src="./blood_bridge_impact_1778503567274.png" width={1000} height={667} loading="lazy" decoding="async" className="w-full h-full object-cover" alt="Medical Lab" />
                 </div>
-                <div className="h-48 bg-gradient-to-br from-blue-500 to-blue-700 rounded-3xl overflow-hidden shadow-lg relative flex items-center justify-center group">
-                  <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors" />
-                  <div className="relative z-10 text-center">
-                    <Building2 size={48} className="text-white/80 mx-auto mb-3" />
-                    <p className="text-white font-bold text-sm">Modern Facilities</p>
-                  </div>
+                <div className="h-48 bg-gray-200 rounded-3xl overflow-hidden shadow-lg">
+                  <img src="https://images.unsplash.com/photo-1536856782524-df4231df3f80?q=80&w=1000&auto=format&fit=crop" width={1000} height={667} loading="lazy" decoding="async" className="w-full h-full object-cover" alt="Hospital Hall" />
                 </div>
               </div>
               <div className="space-y-4">
-                <div className="h-48 bg-gradient-to-br from-purple-500 to-purple-700 rounded-3xl overflow-hidden shadow-lg relative flex items-center justify-center group">
-                  <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors" />
-                  <div className="relative z-10 text-center">
-                    <Users size={48} className="text-white/80 mx-auto mb-3" />
-                    <p className="text-white font-bold text-sm">Expert Medical Team</p>
-                  </div>
+                <div className="h-48 bg-gray-200 rounded-3xl overflow-hidden shadow-lg">
+                  <img src="https://images.unsplash.com/photo-1551076805-e1869033e561?q=80&w=1000&auto=format&fit=crop" width={1000} height={667} loading="lazy" decoding="async" className="w-full h-full object-cover" alt="Doctors" />
                 </div>
                 <div className="h-64 bg-primary-dark rounded-3xl overflow-hidden shadow-2xl relative group">
                   <div className="absolute inset-0 bg-black/25 motion-safe:transition-colors motion-safe:duration-300 motion-safe:group-hover:bg-black/10 motion-reduce:group-hover:bg-black/25" aria-hidden />
