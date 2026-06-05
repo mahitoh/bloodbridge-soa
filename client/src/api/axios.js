@@ -25,8 +25,10 @@ const refreshToken = async () => {
             if (response.data.refreshToken) localStorage.setItem('refreshToken', response.data.refreshToken)
             return response.data.token
         }
-    } catch {}
-    return null
+        return null
+    } catch {
+        return null
+    }
 }
 
 const addAuthAndErrorHandling = (instance) => {
