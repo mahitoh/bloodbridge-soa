@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect, useContext } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { authAPI } from '../api/axios'
 
 const AuthContext = createContext()
@@ -15,6 +16,17 @@ export const AuthProvider = ({ children }) => {
       setLoading(false)
     }
   }, [])
+
+  useEffect(() => {
+    const handler = () => {
+      setUser(null)
+      setLoading(false)
+    }
+    window.addEventListener('auth:logout', handler)
+    return () => window.removeEventListener('auth:logout', handler)
+  }, [])
+
+  const navigate = useNavigate()
 
   const verifyToken = async (token) => {
     if (token === 'demo-token') {

@@ -1,16 +1,20 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 
-const Input = ({ label, error, className, ...props }) => {
+const Input = ({ label, error, className, id, name, ...props }) => {
+  const inputId = id || name || Math.random().toString(36).slice(2, 9)
+  
   return (
     <div className="w-full space-y-1">
       {label && (
-        <label className="block text-sm font-medium text-gray-700">
+        <label htmlFor={inputId} className="block text-sm font-medium text-gray-700">
           {label}
         </label>
       )}
       <input
+        id={inputId}
+        name={name}
         className={twMerge(
           "bg-gray-100 rounded-lg px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-primary-red transition-all duration-200 border-none",
           error && "ring-2 ring-red-500",
