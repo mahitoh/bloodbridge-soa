@@ -84,35 +84,39 @@ const updateAvailability = async (req, res, next) => {
     }
 };
 
-const updateDonor = async (req, res, next) => {
+const getDonorHistory = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const { name, blood_type, phone, city } = req.body;
 
-        const result = await pool.query(
-            `UPDATE donors 
-             SET name = COALESCE($1, name), 
-                 blood_type = COALESCE($2, blood_type), 
-                 phone = COALESCE($3, phone), 
-                 city = COALESCE($4, city) 
-             WHERE id = $5 
-             RETURNING id, name, blood_type, phone, city, latitude, longitude, available, created_at`,
-            [name, blood_type, phone, city, id]
+        const historyResult = await pool.query(
+            `SELECT r.id, r.blood_type, r.units, r.urgency, r.status, r.notes, r.created_at,
+                    h.name as hospital_name, h.city as hospital_city
+             FROM requests r
+             JOIN hospitals h ON r.hospital_id = h.id
+             WHERE r.accepted_by_donor_id = $1
+             ORDER BY r.created_at DESC`,
+            [id]
         );
 
-        if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Donor not found' });
-        }
+        const history = historyResult.rows.map(row => {
+            const dt = new Date(row.created_at)
+            return {
+                id: row.id,
+                hospital: row.hospital_name,
+                bloodType: row.blood_type,
+                units: row.units,
+                urgency: row.urgency,
+                status: row.status,
+                notes: row.notes || '',
+                date: dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                time: dt.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
+            }
+        })
 
-        const donor = result.rows[0];
-
-        await redis.set(`donor:${id}`, JSON.stringify(donor), 'EX', 3600);
-        await redis.del('donors:list');
-
-        res.json({ message: 'Profile updated', donor });
+        res.json({ history });
     } catch (error) {
         next(error);
     }
 };
 
-module.exports = { listDonors, getDonor, createDonor, updateAvailability, updateDonor };
+module.exports = { listDonors, getDonor, createDonor, updateAvailability, updateDonor, getDonorHistory };

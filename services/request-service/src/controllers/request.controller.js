@@ -3,8 +3,8 @@ const { getChannel } = require('../config/rabbitmq');
 
 const listRequests = async (req, res, next) => {
     try {
-        const { status, blood_type } = req.query;
-        let query = 'SELECT id, hospital_id, blood_type, units, urgency, radius, notes, status, created_at FROM requests WHERE 1=1';
+        const { status, blood_type, hospital_id, accepted_by_donor_id } = req.query;
+        let query = 'SELECT id, hospital_id, blood_type, units, urgency, radius, notes, status, accepted_by_donor_id, created_at FROM requests WHERE 1=1';
         const params = [];
         let paramCount = 1;
 
@@ -16,6 +16,16 @@ const listRequests = async (req, res, next) => {
         if (blood_type) {
             query += ` AND blood_type = $${paramCount}`;
             params.push(blood_type);
+            paramCount++;
+        }
+        if (hospital_id) {
+            query += ` AND hospital_id = $${paramCount}`;
+            params.push(hospital_id);
+            paramCount++;
+        }
+        if (accepted_by_donor_id) {
+            query += ` AND accepted_by_donor_id = $${paramCount}`;
+            params.push(accepted_by_donor_id);
             paramCount++;
         }
 

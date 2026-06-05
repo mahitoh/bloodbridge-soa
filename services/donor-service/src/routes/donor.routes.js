@@ -5,6 +5,7 @@ const { verifyToken } = require('../middleware/auth.middleware');
 
 router.get('/', listDonors);
 router.get('/:id', getDonor);
+router.get('/:id/history', getDonorHistory);
 
 router.post('/', verifyToken, validateDonor, createDonor);
 router.put('/:id/availability', verifyToken, validateAvailability, updateAvailability);

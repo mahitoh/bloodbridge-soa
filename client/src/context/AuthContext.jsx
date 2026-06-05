@@ -42,8 +42,9 @@ export const AuthProvider = ({ children }) => {
   const login = async (credentials) => {
     try {
       const response = await authAPI.post('/auth/login', credentials)
-      const { token, user } = response.data
+      const { token, refreshToken, user } = response.data
       localStorage.setItem('token', token)
+      if (refreshToken) localStorage.setItem('refreshToken', refreshToken)
       setUser(user)
       return { success: true, user }
     } catch (error) {
@@ -56,6 +57,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem('token')
+    localStorage.removeItem('refreshToken')
     setUser(null)
   }
 
