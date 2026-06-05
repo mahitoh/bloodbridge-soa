@@ -76,6 +76,7 @@ const updateHospital = async (req, res, next) => {
 const getMyHospital = async (req, res, next) => {
     try {
         const email = req.user?.email;
+        const name = req.user?.name;
         if (!email) return res.status(401).json({ error: 'Unauthorized' });
 
         const result = await pool.query(
@@ -84,7 +85,13 @@ const getMyHospital = async (req, res, next) => {
         );
 
         if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Hospital profile not found' });
+            const newHospital = await pool.query(
+                `INSERT INTO hospitals (name, email, phone, city, address, latitude, longitude) 
+                 VALUES ($1, $2, $3, $4, $5, $6, $7) 
+                 RETURNING id, name, email, phone, city, address, latitude, longitude, created_at`,
+                [name || 'New Hospital', email, null, null, null, null, null]
+            );
+            return res.json({ hospital: newHospital.rows[0] });
         }
 
         res.json({ hospital: result.rows[0] });
