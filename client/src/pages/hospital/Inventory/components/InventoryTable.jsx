@@ -1,8 +1,8 @@
 import React from 'react';
-import BloodTypeBadge from '../../../components/ui/BloodTypeBadge';
-import Button from '../../../components/ui/Button';
-import Input from '../../../components/ui/Input';
-import SkeletonLoader from '../../../components/ui/SkeletonLoader';
+import BloodTypeBadge from '../../../../components/ui/BloodTypeBadge';
+import Button from '../../../../components/ui/Button';
+import Input from '../../../../components/ui/Input';
+import SkeletonLoader from '../../../../components/ui/SkeletonLoader';
 import { 
   TrendingUp, 
   TrendingDown, 
