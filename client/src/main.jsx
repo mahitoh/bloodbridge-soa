@@ -6,6 +6,8 @@ import './index.css'
 import App from './App.jsx'
 import { AuthProvider } from './context/AuthContext.jsx'
 
+const routerBasename = import.meta.env.VITE_ROUTER_BASENAME || '/'
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -18,7 +20,7 @@ const queryClient = new QueryClient({
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <Router>
+      <Router basename={routerBasename}>
         <AuthProvider>
           <App />
         </AuthProvider>

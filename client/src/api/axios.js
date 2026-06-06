@@ -1,6 +1,11 @@
 import axios from 'axios'
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://64.225.100.80'
+const defaultApiBase =
+    typeof window !== 'undefined'
+        ? `${window.location.protocol}//${window.location.hostname}`
+        : 'http://64.225.100.80'
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || defaultApiBase
 const AUTH_PORT = import.meta.env.VITE_AUTH_PORT || '30001'
 const DONOR_PORT = import.meta.env.VITE_DONOR_PORT || '30002'
 const HOSPITAL_PORT = import.meta.env.VITE_HOSPITAL_PORT || '30003'
@@ -42,6 +47,25 @@ const addAuthAndErrorHandling = (instance) => {
         (response) => response,
         async (error) => {
             if (error.response?.status === 401) {
+                if (error.config?.url === '/auth/refresh') {
+                    localStorage.removeItem('token')
+                    localStorage.removeItem('refreshToken')
+                    window.dispatchEvent(new Event('auth:logout'))
+                    return Promise.reject(error)
+                }
+
+                if (localStorage.getItem('token') === 'demo-token') {
+                    return Promise.reject(error)
+                }
+
+                if (error.config?._retry) {
+                    localStorage.removeItem('token')
+                    localStorage.removeItem('refreshToken')
+                    window.dispatchEvent(new Event('auth:logout'))
+                    return Promise.reject(error)
+                }
+
+                error.config._retry = true
                 const newToken = await refreshToken()
                 if (newToken) {
                     error.config.headers.Authorization = `Bearer ${newToken}`
