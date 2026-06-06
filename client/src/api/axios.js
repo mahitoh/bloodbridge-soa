@@ -45,7 +45,7 @@ const addAuthAndErrorHandling = (instance) => {
                 const newToken = await refreshToken()
                 if (newToken) {
                     error.config.headers.Authorization = `Bearer ${newToken}`
-                    return axios.request(error.config)
+                    return instance.request(error.config)
                 }
                 localStorage.removeItem('token')
                 localStorage.removeItem('refreshToken')
