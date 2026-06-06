@@ -161,7 +161,7 @@ const DonorDashboard = () => {
             <div className="flex flex-wrap items-center gap-4 text-gray-600 font-medium">
               <div className="flex items-center gap-2">
                 <MapPin size={18} className="text-primary-red" />
-                San Francisco, CA
+                Bamenda, NW
               </div>
               <span className="text-gray-300">•</span>
               <div className="flex items-center gap-2">

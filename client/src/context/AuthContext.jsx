@@ -47,8 +47,8 @@ export const AuthProvider = ({ children }) => {
     if (token === 'demo-token') {
       const role = localStorage.getItem('demoRole') || 'donor'
       const demoUsers = {
-        donor: { id: 'demo-donor', name: 'Demo Donor', email: 'donor@demo.com', role: 'donor', bloodType: 'O+', phone: '', city: '' },
-        hospital: { id: 'demo-hospital', name: 'General Hospital', email: 'hospital@demo.com', role: 'hospital', bloodType: '', phone: '', city: '' },
+        donor: { id: 'demo-donor', name: 'Jean Tendo', email: 'donor@demo.cm', role: 'donor', bloodType: 'O+', phone: '', city: '' },
+        hospital: { id: 'demo-hospital', name: 'Bamenda Regional Hospital', email: 'contact@bamenda-regional.cm', role: 'hospital', bloodType: '', phone: '', city: '' },
         admin: { id: 'demo-admin', name: 'Admin User', email: 'admin@demo.com', role: 'admin', bloodType: '', phone: '', city: '' },
       }
       setUser(demoUsers[role] || demoUsers.donor)

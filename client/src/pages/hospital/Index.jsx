@@ -114,9 +114,9 @@ const HospitalDashboard = () => {
               <ShieldCheck size={14} /> Verified
             </div>
           </div>
-          <p className="text-gray-500 flex items-center gap-2">
-            <MapPin size={16} /> San Francisco, CA • Reg: BB-88291
-          </p>
+           <p className="text-gray-500 flex items-center gap-2">
+             <MapPin size={16} /> Bamenda, NW • Reg: CM-BDA-001
+           </p>
         </div>
         <div className="flex flex-wrap gap-3">
           <Link to="/hospital/inventory" className="btn btn-secondary gap-2 h-12 px-8">
@@ -155,15 +155,15 @@ const HospitalDashboard = () => {
 
           {/* Map Preview */}
           <div className="card p-0 overflow-hidden h-[400px] relative group z-0">
-             <LiveMap 
-               center={[37.7749, -122.4194]} 
-               zoom={12}
-               markers={[
-                 { position: [37.7649, -122.4294], type: 'donor' },
-                 { position: [37.7949, -122.4094], type: 'donor' },
-                 { position: [37.7849, -122.4394], type: 'donor' },
-               ]}
-             />
+              <LiveMap 
+                center={[5.9622, 10.1584]} 
+                zoom={12}
+                markers={[
+                  { position: [5.9522, 10.1484], type: 'donor' },
+                  { position: [5.9722, 10.1684], type: 'donor' },
+                  { position: [5.9622, 10.1384], type: 'donor' },
+                ]}
+              />
             <div className="absolute top-6 left-6 p-4 bg-white/90 backdrop-blur rounded-2xl shadow-xl border border-white/20 z-10">
               <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Available Donors</p>
               <h3 className="text-2xl font-bold text-gray-900">47 <span className="text-sm font-normal text-gray-500">within 20km</span></h3>

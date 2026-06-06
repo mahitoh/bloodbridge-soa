@@ -345,7 +345,7 @@ const HospitalInventory = () => {
                 Reserved 3 units of A- blood for surgery
               </p>
               <p className="text-xs text-gray-500">
-                4 hours ago • Surgery: Appendectomy • Patient: John Doe
+                 4 hours ago • Surgery: Appendectomy • Patient: Jean Tendo
               </p>
             </div>
           </div>

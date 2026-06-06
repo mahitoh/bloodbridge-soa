@@ -15,9 +15,9 @@ const Login = () => {
 
   const handleDemoLogin = (role) => {
     const mockUsers = {
-      donor: { id: 'd1', name: 'John Doe', email: 'donor@demo.com', role: 'donor', bloodType: 'O+' },
-      hospital: { id: 'h1', name: 'General Hospital', email: 'hospital@demo.com', role: 'hospital' },
-      admin: { id: 'a1', name: 'Admin User', email: 'admin@demo.com', role: 'admin' }
+      donor: { id: 'd1', name: 'Jean Tendo', email: 'donor@demo.cm', role: 'donor', bloodType: 'O+' },
+      hospital: { id: 'h1', name: 'Bamenda Regional Hospital', email: 'contact@bamenda-regional.cm', role: 'hospital' },
+      admin: { id: 'a1', name: 'Admin User', email: 'admin@demo.cm', role: 'admin' }
     }
 
     setUser(mockUsers[role])

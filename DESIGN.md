@@ -298,7 +298,7 @@ client/
 │  🚪 Logout                           │
 ├─────────────────────────────────────┤
 │  HEADER                              │
-│  "Hello, John Doe"                   │
+│  "Hello, Jean Tendo"                 │
 │  Status: [Available/Unavailable]     │
 ├─────────────────────────────────────┤
 │  QUICK STATS                         │
@@ -373,7 +373,7 @@ client/
 │  [████░░░] 33%                       │
 ├─────────────────────────────────────┤
 │  DONORS NOTIFIED LIST                │
-│  John Doe - O+ - 3.2km - Pending    │
+│  Jean Tendo - O+ - 3.2km - Pending    │
 │  Jane Smith - O+ - 5.1km - Accepted  │
 │  Mark Brown - O+ - 8.4km - Declined  │
 ├─────────────────────────────────────┤

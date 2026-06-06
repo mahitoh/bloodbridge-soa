@@ -95,7 +95,7 @@ const Register = () => {
             <Input
               label={role === 'donor' ? "Full Name *" : "Hospital Name *"}
               name="name"
-              placeholder={role === 'donor' ? "John Doe" : "General Hospital"}
+               placeholder={role === 'donor' ? "Jean Tendo" : "Bamenda Regional Hospital"}
               value={formData.name}
               onChange={handleInputChange}
               required
