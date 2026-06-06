@@ -9,7 +9,7 @@ import {
   Legend, 
   ResponsiveContainer 
 } from 'recharts';
-import SkeletonLoader from '../../../components/ui/SkeletonLoader';
+import SkeletonLoader from '../../../../components/ui/SkeletonLoader';
 
 const InventoryChart = ({ 
   data = [], 

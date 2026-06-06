@@ -1,7 +1,7 @@
 import React from 'react';
-import BloodTypeBadge from '../../../components/ui/BloodTypeBadge';
-import Input from '../../../components/ui/Input';
-import Button from '../../../components/ui/Button';
+import BloodTypeBadge from '../../../../components/ui/BloodTypeBadge';
+import Input from '../../../../components/ui/Input';
+import Button from '../../../../components/ui/Button';
 import { 
   Plus, 
   Minus,
