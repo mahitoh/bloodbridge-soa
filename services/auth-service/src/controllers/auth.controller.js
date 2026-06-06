@@ -8,6 +8,12 @@ const signToken = (user) => jwt.sign(
     { expiresIn: '24h' }
 );
 
+const signRefreshToken = (user) => jwt.sign(
+    { id: user.id, email: user.email, role: user.role, type: 'refresh' },
+    process.env.JWT_SECRET || 'dev-secret',
+    { expiresIn: '7d' }
+);
+
 const sanitizeUser = (user) => ({
     id: user.id,
     name: user.name,
@@ -39,7 +45,8 @@ const register = async (req, res, next) => {
 
         res.status(201).json({ 
             message: 'User registered', 
-            token: signToken(user), 
+            token: signToken(user),
+            refreshToken: signRefreshToken(user),
             user: sanitizeUser(user) 
         });
     } catch (error) {
@@ -65,7 +72,7 @@ const login = async (req, res, next) => {
         res.json({ 
             message: 'Login successful', 
             token: signToken(user), 
-            refreshToken: signToken({ id: user.id, email: user.email, role: user.role, type: 'refresh' }),
+            refreshToken: signRefreshToken(user),
             user: sanitizeUser(user) 
         });
     } catch (error) {
@@ -106,7 +113,7 @@ const refreshToken = async (req, res, next) => {
         const user = result.rows[0];
         res.json({
             token: signToken(user),
-            refreshToken: signToken({ id: user.id, email: user.email, role: user.role, type: 'refresh' }),
+            refreshToken: signRefreshToken(user),
             user: sanitizeUser(user)
         });
     } catch (error) {

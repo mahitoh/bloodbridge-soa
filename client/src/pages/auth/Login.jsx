@@ -13,17 +13,18 @@ const Login = () => {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const handleDemoLogin = (role) => {
-    const mockUsers = {
-      donor: { id: 'd1', name: 'John Doe', email: 'donor@demo.com', role: 'donor', bloodType: 'O+' },
-      hospital: { id: 'h1', name: 'General Hospital', email: 'hospital@demo.com', role: 'hospital' },
-      admin: { id: 'a1', name: 'Admin User', email: 'admin@demo.com', role: 'admin' }
-    }
-    
-    setUser(mockUsers[role])
-    localStorage.setItem('token', 'demo-token')
-    navigate(`/${role === 'donor' ? 'donor' : role === 'hospital' ? 'hospital' : 'admin'}`)
-  }
+    const handleDemoLogin = (role) => {
+     const mockUsers = {
+       donor: { id: 'd1', name: 'John Doe', email: 'donor@demo.com', role: 'donor', bloodType: 'O+' },
+       hospital: { id: 'h1', name: 'General Hospital', email: 'hospital@demo.com', role: 'hospital' },
+       admin: { id: 'a1', name: 'Admin User', email: 'admin@demo.com', role: 'admin' }
+     }
+     
+     setUser(mockUsers[role])
+     localStorage.setItem('token', 'demo-token')
+     localStorage.setItem('demoUser', JSON.stringify(mockUsers[role]))
+     navigate(`/${role === 'donor' ? 'donor' : role === 'hospital' ? 'hospital' : 'admin'}`)
+   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
