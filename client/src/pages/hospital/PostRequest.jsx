@@ -13,7 +13,7 @@ import {
   Users
 } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
-import { requestAPI } from '../../api/axios'
+import { requestAPI, hospitalAPI } from '../../api/axios'
 import { useAuth } from '../../context/AuthContext'
 
 const Step1 = ({ data, update, onNext }) => {
