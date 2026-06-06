@@ -49,20 +49,19 @@ const addAuthAndErrorHandling = (instance) => {
         (response) => response,
         async (error) => {
             if (error.response?.status === 401) {
-                if (localStorage.getItem('token') === 'demo-token') {
+                const token = localStorage.getItem('token')
+                // Skip refresh and logout for demo token
+                if (token === 'demo-token') {
                     return Promise.reject(error)
                 }
-
-                if (error.config?._retry) {
-                    return Promise.reject(error)
-                }
-
-                error.config._retry = true
                 const newToken = await refreshToken()
                 if (newToken) {
                     error.config.headers.Authorization = `Bearer ${newToken}`
-                    return instance.request(error.config)
+                    return axios.request(error.config)
                 }
+                localStorage.removeItem('token')
+                localStorage.removeItem('refreshToken')
+                window.dispatchEvent(new Event('auth:logout'))
             }
             return Promise.reject(error)
         }
