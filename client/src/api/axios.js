@@ -20,11 +20,19 @@ export const requestAPI = axios.create({ baseURL: `${API_BASE}:${REQUEST_PORT}` 
 export const locationAPI = axios.create({ baseURL: `${API_BASE}:${LOCATION_PORT}` })
 export const notificationAPI = axios.create({ baseURL: `${API_BASE}:${NOTIFICATION_PORT}` })
 
+const refreshAPI = axios.create({ baseURL: `${API_BASE}:${AUTH_PORT}` })
+
+const clearSession = () => {
+    localStorage.removeItem('token')
+    localStorage.removeItem('refreshToken')
+    window.dispatchEvent(new Event('auth:logout'))
+}
+
 const refreshToken = async () => {
     const refresh = localStorage.getItem('refreshToken')
     if (!refresh) return null
     try {
-        const response = await authAPI.post('/auth/refresh', { refreshToken: refresh })
+        const response = await refreshAPI.post('/auth/refresh', { refreshToken: refresh })
         if (response.data.token) {
             localStorage.setItem('token', response.data.token)
             if (response.data.refreshToken) localStorage.setItem('refreshToken', response.data.refreshToken)
@@ -36,7 +44,7 @@ const refreshToken = async () => {
     }
 }
 
-const addAuthAndErrorHandling = (instance) => {
+const addAuthAndErrorHandling = (instance, { canLogout = false } = {}) => {
     instance.interceptors.request.use(async (config) => {
         const token = localStorage.getItem('token')
         if (token) config.headers.Authorization = `Bearer ${token}`
@@ -47,21 +55,12 @@ const addAuthAndErrorHandling = (instance) => {
         (response) => response,
         async (error) => {
             if (error.response?.status === 401) {
-                if (error.config?.url === '/auth/refresh') {
-                    localStorage.removeItem('token')
-                    localStorage.removeItem('refreshToken')
-                    window.dispatchEvent(new Event('auth:logout'))
-                    return Promise.reject(error)
-                }
-
                 if (localStorage.getItem('token') === 'demo-token') {
                     return Promise.reject(error)
                 }
 
                 if (error.config?._retry) {
-                    localStorage.removeItem('token')
-                    localStorage.removeItem('refreshToken')
-                    window.dispatchEvent(new Event('auth:logout'))
+                    if (canLogout) clearSession()
                     return Promise.reject(error)
                 }
 
@@ -71,16 +70,17 @@ const addAuthAndErrorHandling = (instance) => {
                     error.config.headers.Authorization = `Bearer ${newToken}`
                     return instance.request(error.config)
                 }
-                localStorage.removeItem('token')
-                localStorage.removeItem('refreshToken')
-                window.dispatchEvent(new Event('auth:logout'))
+
+                if (canLogout) clearSession()
             }
             return Promise.reject(error)
         }
     )
 }
 
-const instances = [authAPI, donorAPI, hospitalAPI, requestAPI, locationAPI, notificationAPI]
-instances.forEach(addAuthAndErrorHandling)
+addAuthAndErrorHandling(authAPI, { canLogout: true })
+;[donorAPI, hospitalAPI, requestAPI, locationAPI, notificationAPI].forEach((instance) => {
+    addAuthAndErrorHandling(instance)
+})
 
-export default instances
+export default [authAPI, donorAPI, hospitalAPI, requestAPI, locationAPI, notificationAPI]
