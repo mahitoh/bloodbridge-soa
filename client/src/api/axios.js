@@ -22,12 +22,6 @@ export const notificationAPI = axios.create({ baseURL: `${API_BASE}:${NOTIFICATI
 
 const refreshAPI = axios.create({ baseURL: `${API_BASE}:${AUTH_PORT}` })
 
-const clearSession = () => {
-    localStorage.removeItem('token')
-    localStorage.removeItem('refreshToken')
-    window.dispatchEvent(new Event('auth:logout'))
-}
-
 const refreshToken = async () => {
     const refresh = localStorage.getItem('refreshToken')
     if (!refresh) return null
@@ -44,7 +38,7 @@ const refreshToken = async () => {
     }
 }
 
-const addAuthAndErrorHandling = (instance, { canLogout = false } = {}) => {
+const addAuthAndErrorHandling = (instance) => {
     instance.interceptors.request.use(async (config) => {
         const token = localStorage.getItem('token')
         if (token) config.headers.Authorization = `Bearer ${token}`
@@ -60,7 +54,6 @@ const addAuthAndErrorHandling = (instance, { canLogout = false } = {}) => {
                 }
 
                 if (error.config?._retry) {
-                    if (canLogout) clearSession()
                     return Promise.reject(error)
                 }
 
@@ -70,15 +63,13 @@ const addAuthAndErrorHandling = (instance, { canLogout = false } = {}) => {
                     error.config.headers.Authorization = `Bearer ${newToken}`
                     return instance.request(error.config)
                 }
-
-                if (canLogout) clearSession()
             }
             return Promise.reject(error)
         }
     )
 }
 
-addAuthAndErrorHandling(authAPI, { canLogout: true })
+addAuthAndErrorHandling(authAPI)
 ;[donorAPI, hospitalAPI, requestAPI, locationAPI, notificationAPI].forEach((instance) => {
     addAuthAndErrorHandling(instance)
 })

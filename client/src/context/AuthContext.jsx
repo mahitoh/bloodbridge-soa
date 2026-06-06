@@ -5,9 +5,24 @@ import { authAPI } from '../api/axios'
 const AuthContext = createContext()
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null)
+  const [user, setUserState] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('user') || 'null')
+    } catch {
+      return null
+    }
+  })
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
+
+  const setUser = (nextUser) => {
+    setUserState(nextUser)
+    if (nextUser) {
+      localStorage.setItem('user', JSON.stringify(nextUser))
+    } else {
+      localStorage.removeItem('user')
+    }
+  }
 
   useEffect(() => {
     const token = localStorage.getItem('token')
@@ -44,8 +59,11 @@ export const AuthProvider = ({ children }) => {
         city: verifiedUser.city || '',
       })
     } catch (error) {
-      localStorage.removeItem('token')
-      setUser(null)
+      if (error.response?.status === 401 || error.response?.status === 404) {
+        localStorage.removeItem('token')
+        localStorage.removeItem('refreshToken')
+        setUser(null)
+      }
     } finally {
       setLoading(false)
     }
