@@ -247,8 +247,8 @@ const PostRequest = () => {
     setError('')
     try {
       const response = await requestAPI.post('/requests', {
-        hospitalId,
-        bloodType: formData.bloodType,
+        hospital_id: hospitalId,
+        blood_type: formData.bloodType,
         units: formData.units,
         urgency: formData.urgency,
         radius: formData.radius,
