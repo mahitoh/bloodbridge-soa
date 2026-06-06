@@ -38,7 +38,7 @@ const refreshToken = async () => {
     }
 }
 
-const addAuthAndErrorHandling = (instance) => {
+const addAuthAndErrorHandling = (instance, { logoutOnUnauthorized = false } = {}) => {
     instance.interceptors.request.use(async (config) => {
         const token = localStorage.getItem('token')
         if (token) config.headers.Authorization = `Bearer ${token}`
@@ -50,25 +50,30 @@ const addAuthAndErrorHandling = (instance) => {
         async (error) => {
             if (error.response?.status === 401) {
                 const token = localStorage.getItem('token')
-                // Skip refresh and logout for demo token
                 if (token === 'demo-token') {
                     return Promise.reject(error)
                 }
+                if (error.config?._retry) {
+                    return Promise.reject(error)
+                }
+                error.config._retry = true
                 const newToken = await refreshToken()
                 if (newToken) {
                     error.config.headers.Authorization = `Bearer ${newToken}`
-                    return axios.request(error.config)
+                    return instance.request(error.config)
                 }
-                localStorage.removeItem('token')
-                localStorage.removeItem('refreshToken')
-                window.dispatchEvent(new Event('auth:logout'))
+                if (logoutOnUnauthorized) {
+                    localStorage.removeItem('token')
+                    localStorage.removeItem('refreshToken')
+                    window.dispatchEvent(new Event('auth:logout'))
+                }
             }
             return Promise.reject(error)
         }
     )
 }
 
-addAuthAndErrorHandling(authAPI)
+addAuthAndErrorHandling(authAPI, { logoutOnUnauthorized: true })
 ;[donorAPI, hospitalAPI, requestAPI, locationAPI, notificationAPI].forEach((instance) => {
     addAuthAndErrorHandling(instance)
 })

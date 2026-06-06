@@ -96,6 +96,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('refreshToken')
     localStorage.removeItem('isDemo')
     localStorage.removeItem('demoRole')
+    localStorage.removeItem('demoUser')
     setUser(null)
   }
 
