@@ -178,9 +178,18 @@ const HospitalRequests = () => {
                   </td>
                 </tr>
               ) : filteredRequests.length > 0 ? (
-                filteredRequests.map(req => (
-                  <RequestRow key={req.id} request={req} />
-                ))
+filteredRequests.map(req => {
+                   const mapped = {
+                     ...req,
+                     bloodType: req.blood_type,
+                     date: req.created_at,
+                     secured: req.accepted_by_donor_id ? 1 : 0,
+                     needed: req.units,
+                     responses: 0,
+                     notified: 0
+                   }
+                   return <RequestRow key={req.id} request={mapped} />
+                 })
               ) : (
                 <tr>
                   <td colSpan={6} className="p-16 text-center text-gray-500">
