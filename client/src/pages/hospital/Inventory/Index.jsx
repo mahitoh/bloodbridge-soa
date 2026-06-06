@@ -3,6 +3,9 @@ import DashboardLayout from '../../../components/layout/DashboardLayout';
 import BloodTypeBadge from '../../../components/ui/BloodTypeBadge';
 import Button from '../../../components/ui/Button';
 import StatCard from '../../../components/ui/StatCard';
+import InventoryTable from './components/InventoryTable';
+import InventoryChart from './components/InventoryChart';
+import InventoryControls from './components/InventoryControls';
 import { 
   Droplets, 
   RefreshCw, 
