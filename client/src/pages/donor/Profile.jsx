@@ -25,11 +25,11 @@ const DonorProfile = () => {
   const [donor, setDonor] = useState(null)
   const [isEditing, setIsEditing] = useState(false)
   const [formData, setFormData] = useState({
-    name: user?.name || 'John Doe',
+    name: user?.name || 'Jean Tendo',
     email: user?.email || 'john@example.com',
-    phone: '+1 (555) 123-4567',
+    phone: '+237 (6xx) xxx xxx',
     dob: '1990-05-15',
-    city: 'San Francisco, CA',
+    city: 'Bamenda, NW',
   })
 
   useEffect(() => {
@@ -40,10 +40,10 @@ const DonorProfile = () => {
         setDonor(response.data.donor)
         setFormData({
           name: response.data.donor.name || user?.name || 'John Doe',
-          email: user?.email || 'john@example.com',
-          phone: response.data.donor.phone || '+1 (555) 123-4567',
+    email: user?.email || 'donor@demo.cm',
+           phone: response.data.donor.phone || '+237 6xx xxx xxx',
           dob: response.data.donor.date_of_birth || '1990-05-15',
-          city: response.data.donor.city || 'San Francisco, CA',
+          city: response.data.donor.city || 'Bamenda, NW',
         })
       } catch (err) {
         console.error('Failed to fetch donor profile:', err)

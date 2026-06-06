@@ -29,7 +29,7 @@ const hospitalIcon = L.divIcon({
   iconAnchor: [20, 20]
 });
 
-export const LiveMap = ({ center = [37.7749, -122.4194], zoom = 12, markers = [], className }) => {
+export const LiveMap = ({ center = [5.9622, 10.1584], zoom = 12, markers = [], className }) => {
   return (
     <div className={twMerge("w-full h-full relative z-0 rounded-3xl overflow-hidden border border-gray-100 shadow-sm", className)}>
       <MapContainer 

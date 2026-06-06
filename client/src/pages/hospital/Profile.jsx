@@ -25,12 +25,12 @@ const HospitalProfile = () => {
   const [error, setError] = useState('')
   const [formData, setFormData] = useState({
     id: '',
-    name: 'General Hospital',
-    email: 'contact@generalhospital.demo',
-    phone: '+1 (555) 987-6543',
-    registrationNumber: 'REG-882910-MH',
-    address: '123 Medical Center Drive',
-    city: 'San Francisco, CA',
+    name: 'Bamenda Regional Hospital',
+    email: 'contact@bamenda-regional.cm',
+    phone: '+237 6xx xxx xxx',
+    registrationNumber: 'REG-CM-BDA-001',
+    address: 'Avenue de la Liberté, Bamenda',
+    city: 'Bamenda, NW',
   })
 
   useEffect(() => {

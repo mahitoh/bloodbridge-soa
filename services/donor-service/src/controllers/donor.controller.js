@@ -130,7 +130,7 @@ const getDonorHistory = async (req, res, next) => {
             const dt = new Date(row.created_at)
             return {
                 id: row.id,
-                hospital: 'General Hospital',
+                 hospital: 'Bamenda Regional Hospital',
                 bloodType: row.blood_type,
                 units: row.units,
                 urgency: row.urgency,
