@@ -65,6 +65,7 @@ const login = async (req, res, next) => {
         res.json({ 
             message: 'Login successful', 
             token: signToken(user), 
+            refreshToken: signToken({ id: user.id, email: user.email, role: user.role, type: 'refresh' }),
             user: sanitizeUser(user) 
         });
     } catch (error) {
