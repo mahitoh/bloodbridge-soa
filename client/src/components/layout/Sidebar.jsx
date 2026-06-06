@@ -58,7 +58,7 @@ const Sidebar = ({ onOpenNotifications }) => {
       <div className="p-6">
         <Link to="/" className="flex items-center gap-2 group">
           <div className="w-8 h-8 flex items-center justify-center group-hover:scale-110 transition-transform">
-            <img src="favicon.svg" alt="BloodBridge Logo" className="w-full h-full object-contain drop-shadow-md" />
+            <img src="/favicon.svg" alt="BloodBridge Logo" className="w-full h-full object-contain drop-shadow-md" />
           </div>
           <span className="text-xl font-display font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600">
             BloodBridge
