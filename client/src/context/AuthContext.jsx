@@ -45,7 +45,13 @@ export const AuthProvider = ({ children }) => {
 
   const verifyToken = async (token) => {
     if (token === 'demo-token') {
-      setUser({ id: 'demo', name: 'Demo User', email: 'demo@bloodbridge.com', role: 'donor', bloodType: 'O+', phone: '', city: '' })
+      const role = localStorage.getItem('demoRole') || 'donor'
+      const demoUsers = {
+        donor: { id: 'demo-donor', name: 'Demo Donor', email: 'donor@demo.com', role: 'donor', bloodType: 'O+', phone: '', city: '' },
+        hospital: { id: 'demo-hospital', name: 'General Hospital', email: 'hospital@demo.com', role: 'hospital', bloodType: '', phone: '', city: '' },
+        admin: { id: 'demo-admin', name: 'Admin User', email: 'admin@demo.com', role: 'admin', bloodType: '', phone: '', city: '' },
+      }
+      setUser(demoUsers[role] || demoUsers.donor)
       setLoading(false)
       return
     }
@@ -88,6 +94,8 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     localStorage.removeItem('token')
     localStorage.removeItem('refreshToken')
+    localStorage.removeItem('isDemo')
+    localStorage.removeItem('demoRole')
     setUser(null)
   }
 

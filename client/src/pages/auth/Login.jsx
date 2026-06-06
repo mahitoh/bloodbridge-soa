@@ -19,9 +19,11 @@ const Login = () => {
       hospital: { id: 'h1', name: 'General Hospital', email: 'hospital@demo.com', role: 'hospital' },
       admin: { id: 'a1', name: 'Admin User', email: 'admin@demo.com', role: 'admin' }
     }
-    
+
     setUser(mockUsers[role])
     localStorage.setItem('token', 'demo-token')
+    localStorage.setItem('isDemo', 'true')
+    localStorage.setItem('demoRole', role)
     navigate(`/${role === 'donor' ? 'donor' : role === 'hospital' ? 'hospital' : 'admin'}`)
   }
 
